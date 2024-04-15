@@ -17,4 +17,11 @@
 - [ ] `rv pull`
 - [ ] `rv switch`
 - [ ] `rv export`
-- [ ] `rv git`
+- [ ] `rv validate`
+- [ ] `rv custom`
+
+## Requirements
+
+```console
+go get -u github.com/spf13/cobra@latest
+```
