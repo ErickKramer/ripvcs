@@ -5,7 +5,9 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // IsGitRepository checks if a directory is a git repository
@@ -33,4 +35,32 @@ func FindGitRepositories(root string) []string {
 		fmt.Println("Error: ", err)
 	}
 	return gitRepos
+}
+
+// GetGitStatus Execute git status in a given path
+func GetGitStatus(path string) string {
+	cmd := exec.Command("git", "-c", "color.status=always", "status")
+	cmd.Dir = path
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error running 'git status' at %s: %s\n", path, err)
+		return ""
+	}
+	return string(output)
+}
+
+// PrintGitStatus Send the git status of a path to stdout with color codes.
+func PrintGitStatus(path string, skipEmpty bool) {
+	repoStatus := GetGitStatus(path)
+
+	blueColor := "\033[38;2;137;180;250m"
+	resetColor := "\033[0m"
+
+	if skipEmpty && strings.Contains(repoStatus, "working tree clean") {
+		return
+	}
+
+	fmt.Printf("%s=== %s ===%s\n", blueColor, path, resetColor)
+	fmt.Print(string(repoStatus))
 }
