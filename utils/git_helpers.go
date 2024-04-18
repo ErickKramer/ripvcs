@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -37,17 +38,45 @@ func FindGitRepositories(root string) []string {
 	return gitRepos
 }
 
-// GetGitStatus Execute git status in a given path
-func GetGitStatus(path string) string {
-	cmd := exec.Command("git", "-c", "color.status=always", "status")
+func RunGitCmd(path string, gitCmd string, args ...string) string {
+	cmdArgs := append([]string{"-c", "color.ui=always", gitCmd}, args...)
+	cmd := exec.Command("git", cmdArgs...)
 	cmd.Dir = path
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Printf("Error running 'git status' at %s: %s\n", path, err)
+		fmt.Printf("Error running 'git %s %s' at %s: %s\n", gitCmd, strings.Join(args, " "), path, err)
 		return ""
 	}
 	return string(output)
+}
+
+// GetGitStatus Execute git status in a given path
+func GetGitStatus(path string) string {
+	return RunGitCmd(path, "status")
+}
+
+func GetGitLog(path string, oneline bool, numCommits int) string {
+	var cmdArgs []string
+
+	if oneline {
+		cmdArgs = []string{"-n", strconv.Itoa(numCommits), "--oneline"}
+	} else {
+		cmdArgs = []string{"-n", strconv.Itoa(numCommits)}
+	}
+
+	repoLogs := RunGitCmd(path, "log", cmdArgs...)
+	return repoLogs
+}
+
+func PrintGitLog(path string, oneline bool, numCommits int) {
+	repoLogs := GetGitLog(path, oneline, numCommits)
+
+	blueColor := "\033[38;2;137;180;250m"
+	resetColor := "\033[0m"
+
+	fmt.Printf("%s=== %s ===%s\n", blueColor, path, resetColor)
+	fmt.Print(string(repoLogs))
 }
 
 // PrintGitStatus Send the git status of a path to stdout with color codes.

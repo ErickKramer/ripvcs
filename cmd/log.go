@@ -9,17 +9,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// statusCmd represents the status command
-var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Check the status of any relative repository found relative to the given path.",
+// logCmd represents the log command
+var logCmd = &cobra.Command{
+	Use:   "log",
+	Short: "Get logs of found repositories.",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Args: cobra.MaximumNArgs(1), // Specify positional argument for the path
 	Run: func(cmd *cobra.Command, args []string) {
 		var root string
 		if len(args) == 0 {
@@ -29,8 +28,9 @@ to quickly create a Cobra application.`,
 		}
 		gitRepos := utils.FindGitRepositories(root)
 
-		skipEmtpy, _ := cmd.Flags().GetBool("skip-empty")
+		onelineFlag, _ := cmd.Flags().GetBool("oneline")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
+		numCommits, _ := cmd.Flags().GetInt("num-commits")
 
 		// Create a channel to send work to the workers with a buffer size of length gitRepos
 		// HINT: The buffer size specifies how many elements the channel can hold before blocking sends
@@ -43,7 +43,7 @@ to quickly create a Cobra application.`,
 		for i := 0; i < numWorkers; i++ {
 			go func() {
 				for repo := range jobs {
-					utils.PrintGitStatus(repo, skipEmtpy)
+					utils.PrintGitLog(repo, onelineFlag, numCommits)
 				}
 				done <- true
 			}()
@@ -62,7 +62,8 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	rootCmd.AddCommand(statusCmd)
-	statusCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
-	statusCmd.Flags().BoolP("skip-empty", "s", false, "Skip repositories with clean working tree.")
+	rootCmd.AddCommand(logCmd)
+	logCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	logCmd.Flags().IntP("num-commits", "n", 4, "Show only the last n commits")
+	logCmd.Flags().BoolP("oneline", "l", false, "Show short version of logs")
 }
