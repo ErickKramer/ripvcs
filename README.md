@@ -9,15 +9,18 @@
 - [ ] Ignore supported by `.gitignore`
 - [ ] Handle recursive `.repos`
 - [ ] Actually work with `skip-existing`
+- [ ] Handle tar and zip files
 
 ## Commands
 
 - [ ] `rv import`
-- [ ] `rv status `
+- [x] `rv status `
 - [ ] `rv pull`
 - [ ] `rv switch`
 - [ ] `rv export`
-- [ ] `rv validate`
+- [x] `rv validate`
+- [ ] `rv push`
+- [x] `rv log`
 - [ ] `rv custom`
 
 ## Requirements
