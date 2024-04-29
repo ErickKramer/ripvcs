@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/jesseduffield/yaml"
@@ -65,4 +66,16 @@ func ParseReposFile(filePath string) (*Config, error) {
 	}
 	return &config, nil
 
+}
+
+func FindReposFiles(rootPath string) ([]string, error) {
+	var foundReposFiles []string
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() && filepath.Ext(path) == ".repos" {
+			foundReposFiles = append(foundReposFiles, path)
+		}
+		return nil
+	})
+
+	return foundReposFiles, err
 }

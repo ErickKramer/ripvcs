@@ -45,7 +45,7 @@ to quickly create a Cobra application.`,
 		for i := 0; i < numWorkers; i++ {
 			go func() {
 				for job := range jobs {
-					invalidFile = utils.PrintCheckGit(job.DirName, job.Repo.URL, job.Repo.Version, false)
+					validFile = utils.PrintCheckGit(job.DirName, job.Repo.URL, job.Repo.Version, false)
 				}
 				done <- true
 			}()

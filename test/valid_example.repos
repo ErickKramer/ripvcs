@@ -1,0 +1,33 @@
+repositories:
+  demos_rolling:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  demos_rolling_2:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  demos_rolling_3:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  demos_rolling_4:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  demos_rolling_5:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  dummy/demos_rolling_5:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  dummy/demos_rolling:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: rolling
+  demos_humble:
+    type: git
+    url: https://github.com/ros2/demos.git
+    version: humble

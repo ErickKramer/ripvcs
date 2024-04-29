@@ -84,3 +84,27 @@ func TestGitLog(t *testing.T) {
 		t.Errorf("Failed to check logs of a valid repository")
 	}
 }
+
+func TestCheckGitUrl(t *testing.T) {
+	if utils.IsGitURLValid("https://github.com/ros2/demosasdasd.git", "rolling", false) {
+		t.Errorf("Expected to return invalid URL")
+	}
+	if !utils.IsGitURLValid("https://github.com/ros2/demos.git", "rolling", false) {
+		t.Errorf("Expected to return invalid URL")
+	}
+}
+
+func TestCloneGitRepo(t *testing.T) {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/ros2cli", "", "/tmp/testdata/ros2cli", false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/sadasdasd.git", "", "/tmp/testdata/sdasda", false, false) != utils.FailedClone {
+		t.Errorf("Expected to fail to clone git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, false) != utils.SkippedClone {
+		t.Errorf("Expected to skip to clone git repository")
+	}
+}

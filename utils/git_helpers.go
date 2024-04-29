@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+// Create constant Error messages
+const (
+	SuccessfullClone = iota
+	SkippedClone
+	FailedClone
+)
+
 // IsGitRepository checks if a directory is a git repository
 func IsGitRepository(dir string) bool {
 	gitDir := filepath.Join(dir, ".git")
@@ -93,19 +100,45 @@ func GetGitLog(path string, oneline bool, numCommits int) string {
 	return output
 }
 
-func PrintHelper(path string) {
+func GitClone(url string, version string, clonePath string, skipIfExisting bool, enablePrompt bool) int {
 
-	blueColor := "\033[38;2;137;180;250m"
-	resetColor := "\033[0m"
+	// Check if clonePath exists
+	if _, err := os.Stat(clonePath); err == nil {
+		if skipIfExisting {
+			return SkippedClone
+		} else {
+			// Remove existing clonePath
+			if err := os.RemoveAll(clonePath); err != nil {
+				fmt.Printf("Failed to remove existing cloning path %s. Error: %s\n", clonePath, err)
+				panic(err)
+			}
+		}
+	}
 
-	fmt.Printf("%s=== %s ===%s\n", blueColor, path, resetColor)
+	var envConfig []string
+	if enablePrompt {
+		envConfig = []string{"GIT_TERMINAL_PROMPT=1"}
+	} else {
+		envConfig = []string{"GIT_TERMINAL_PROMPT=0"}
+	}
+
+	var cmdArgs []string
+	if version == "" {
+		cmdArgs = []string{url, clonePath}
+	} else {
+		cmdArgs = []string{url, "--branch", version, clonePath}
+	}
+	_, err := RunGitCmd(".", "clone", envConfig, cmdArgs...)
+	if err != nil {
+		return FailedClone
+	}
+	return SuccessfullClone
 }
 
 func PrintGitLog(path string, oneline bool, numCommits int) {
 	repoLogs := GetGitLog(path, oneline, numCommits)
 
-	PrintHelper(path)
-	fmt.Print(string(repoLogs))
+	PrintRepoEntry(path, string(repoLogs))
 }
 
 // PrintGitStatus Send the git status of a path to stdout with color codes.
@@ -116,23 +149,41 @@ func PrintGitStatus(path string, skipEmpty bool) {
 		return
 	}
 
-	PrintHelper(path)
-	fmt.Print(string(repoStatus))
+	PrintRepoEntry(path, string(repoStatus))
 }
 
 func PrintCheckGit(path string, url string, version string, enablePrompt bool) bool {
-	redColor := "\033[38;2;255;0;0m"
-	resetColor := "\033[0m"
 	var checkMsg string
 	var isURLValid bool
 	if !IsGitURLValid(url, version, enablePrompt) {
-		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s%s'\n", redColor, url, version, resetColor)
+		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s%s'\n", RedColor, url, version, ResetColor)
 		isURLValid = false
 	} else {
 		checkMsg = fmt.Sprintf("Successfully contact git repository '%s' with version '%s'\n", url, version)
 		isURLValid = true
 	}
-	PrintHelper(path)
-	fmt.Printf(checkMsg)
+	PrintRepoEntry(path, checkMsg)
 	return isURLValid
+}
+
+func PrintGitClone(url string, version string, path string, skipIfExisting bool, enablePrompt bool) bool {
+	// FIXME: Sometimes printing may not be accurate!
+	var cloneMsg string
+	var cloneSuccessful bool
+	statusClone := GitClone(url, version, path, skipIfExisting, enablePrompt)
+	switch statusClone {
+	case SuccessfullClone:
+		cloneMsg = fmt.Sprintf("Successfully cloned git repository '%s' with version '%s'\n", url, version)
+		cloneSuccessful = true
+	case SkippedClone:
+		cloneMsg = fmt.Sprintf("%sSkipped cloning existing git repository '%s' %s'\n", OrangeColor, url, ResetColor)
+		cloneSuccessful = true
+	case FailedClone:
+		cloneMsg = fmt.Sprintf("%sFailed to clone git repository '%s' with version '%s%s'\n", RedColor, url, version, ResetColor)
+		cloneSuccessful = false
+	default:
+		panic("Unexpected behavior!")
+	}
+	PrintRepoEntry(path, cloneMsg)
+	return cloneSuccessful
 }
