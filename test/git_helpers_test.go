@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"ripvcs/utils"
@@ -106,5 +107,30 @@ func TestCloneGitRepo(t *testing.T) {
 	}
 	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, false) != utils.SkippedClone {
 		t.Errorf("Expected to skip to clone git repository")
+	}
+}
+
+func TestGitSwitch(t *testing.T) {
+	repoPath := "/tmp/testdata/switch_test"
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	output, err := utils.GitSwitch(repoPath, "humble", false, false)
+	if err != nil {
+		t.Errorf("Expected to successfully to switch to a branch. Error %s", err)
+	}
+
+	output, err = utils.GitSwitch(repoPath, "nonexisting", false, false)
+	if err == nil {
+		t.Errorf("Expected to fail to switch to a nonexisting branch.\nError %s", err)
+	}
+	fmt.Println(output)
+	output, err = utils.GitSwitch(repoPath, "nonexisting", true, false)
+	if err != nil {
+		t.Errorf("Expected to successfully to create a new branch.\nError %s", err)
+	}
+	output, err = utils.GitSwitch(repoPath, "0.34.0", false, true)
+	if err != nil {
+		t.Errorf("Expected to successfully to switch to a tag.\nError %s", err)
 	}
 }

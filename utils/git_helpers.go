@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -20,6 +21,7 @@ const (
 
 // IsGitRepository checks if a directory is a git repository
 func IsGitRepository(dir string) bool {
+	// FIXME: Check if dir is a directory
 	gitDir := filepath.Join(dir, ".git")
 	_, err := os.Stat(gitDir)
 	return err == nil
@@ -51,7 +53,7 @@ func RunGitCmd(path string, gitCmd string, envConfig []string, args ...string) (
 	cmd.Env = append(os.Environ(), envConfig...)
 	cmd.Dir = path
 
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", err
 	}
@@ -100,6 +102,25 @@ func GetGitLog(path string, oneline bool, numCommits int) string {
 	return output
 }
 
+func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (string, error) {
+
+	cmdArgs := []string{}
+
+	if detachHead {
+		cmdArgs = append(cmdArgs, "--detach")
+	} else if createBranch {
+		cmdArgs = append(cmdArgs, "--create")
+	}
+	cmdArgs = append(cmdArgs, branch)
+
+	output, err := RunGitCmd(path, "switch", nil, cmdArgs...)
+	if err != nil {
+		switchError := errors.New(fmt.Sprintf("Failed to switch branch of repository %s to %s. Error: %s", path, branch, err))
+		return "", switchError
+	}
+	return output, nil
+}
+
 func GitClone(url string, version string, clonePath string, skipIfExisting bool, enablePrompt bool) int {
 
 	// Check if clonePath exists
@@ -137,7 +158,6 @@ func GitClone(url string, version string, clonePath string, skipIfExisting bool,
 
 func PrintGitLog(path string, oneline bool, numCommits int) {
 	repoLogs := GetGitLog(path, oneline, numCommits)
-
 	PrintRepoEntry(path, string(repoLogs))
 }
 
@@ -156,7 +176,7 @@ func PrintCheckGit(path string, url string, version string, enablePrompt bool) b
 	var checkMsg string
 	var isURLValid bool
 	if !IsGitURLValid(url, version, enablePrompt) {
-		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s%s'\n", RedColor, url, version, ResetColor)
+		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s'%s\n", RedColor, url, version, ResetColor)
 		isURLValid = false
 	} else {
 		checkMsg = fmt.Sprintf("Successfully contact git repository '%s' with version '%s'\n", url, version)
@@ -176,14 +196,25 @@ func PrintGitClone(url string, version string, path string, skipIfExisting bool,
 		cloneMsg = fmt.Sprintf("Successfully cloned git repository '%s' with version '%s'\n", url, version)
 		cloneSuccessful = true
 	case SkippedClone:
-		cloneMsg = fmt.Sprintf("%sSkipped cloning existing git repository '%s' %s'\n", OrangeColor, url, ResetColor)
+		cloneMsg = fmt.Sprintf("%sSkipped cloning existing git repository '%s'%s\n", OrangeColor, url, ResetColor)
 		cloneSuccessful = true
 	case FailedClone:
-		cloneMsg = fmt.Sprintf("%sFailed to clone git repository '%s' with version '%s%s'\n", RedColor, url, version, ResetColor)
+		cloneMsg = fmt.Sprintf("%sFailed to clone git repository '%s' with version '%s'%s\n", RedColor, url, version, ResetColor)
 		cloneSuccessful = false
 	default:
 		panic("Unexpected behavior!")
 	}
 	PrintRepoEntry(path, cloneMsg)
 	return cloneSuccessful
+}
+
+func PrintGitSwitch(path string, branch string, createBranch bool, detachHead bool) bool {
+	switchMsg, err := GitSwitch(path, branch, createBranch, detachHead)
+	if err == nil {
+		PrintRepoEntry(path, string(switchMsg))
+		return true
+	}
+	errorMsg := fmt.Sprintf("%sError: '%s'%s\n", RedColor, err, ResetColor)
+	PrintRepoEntry(path, string(errorMsg))
+	return false
 }

@@ -72,10 +72,44 @@ func FindReposFiles(rootPath string) ([]string, error) {
 	var foundReposFiles []string
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() && filepath.Ext(path) == ".repos" {
+			if err != nil {
+				return err
+			}
 			foundReposFiles = append(foundReposFiles, path)
 		}
 		return nil
 	})
 
 	return foundReposFiles, err
+}
+
+func FindDirectory(rootPath string, targetDir string) (string, error) {
+	if len(rootPath) == 0 {
+		return "", errors.New("Empty rootPath given")
+	}
+	if len(targetDir) == 0 {
+		return "", errors.New("Empty targetDir given")
+	}
+	if rootInfo, err := os.Stat(rootPath); err != nil || !rootInfo.IsDir() {
+		return "", err
+	}
+	if _, err := os.Stat(targetDir); err == nil {
+		return "", errors.New("targetDir is a Path!. Expected just a name.")
+	}
+
+	var dirPath string
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && info.Name() == targetDir {
+			dirPath = path
+			return filepath.SkipDir
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	return dirPath, nil
 }
