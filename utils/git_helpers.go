@@ -69,6 +69,14 @@ func GetGitStatus(path string) string {
 	return output
 }
 
+func PullGitRepo(path string) string {
+	output, err := RunGitCmd(path, "pull", nil)
+	if err != nil {
+		fmt.Printf("Failed to pull Git repository %s. Error: %s", path, err)
+	}
+	return output
+}
+
 func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 	var envConfig []string
 	if enablePrompt {
@@ -170,6 +178,12 @@ func PrintGitStatus(path string, skipEmpty bool) {
 	}
 
 	PrintRepoEntry(path, string(repoStatus))
+}
+
+func PrintGitPull(path string) {
+	pullMsg := PullGitRepo(path)
+
+	PrintRepoEntry(path, string(pullMsg))
 }
 
 func PrintCheckGit(path string, url string, version string, enablePrompt bool) bool {

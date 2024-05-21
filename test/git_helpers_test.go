@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"ripvcs/utils"
+	"strings"
 	"testing"
 )
 
@@ -73,6 +74,16 @@ func TestFindGitRepos(t *testing.T) {
 func TestGitStatus(t *testing.T) {
 	if utils.GetGitStatus("/tmp/testdata/valid_repo") == "" {
 		t.Errorf("Failed to check status of a valid repository")
+	}
+}
+
+func TestGitPull(t *testing.T) {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	msg := utils.PullGitRepo("/tmp/testdata/demos")
+	if strings.TrimSpace(msg) != "Already up to date." {
+		t.Errorf("Failed to pull valid repository. Obtained %s", msg)
 	}
 }
 
