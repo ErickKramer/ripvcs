@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -11,14 +11,11 @@ import (
 
 // pullCmd represents the pull command
 var pullCmd = &cobra.Command{
-	Use:   "pull",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "pull <optional path>",
+	Short: "Pull latest version from remote.",
+	Long: `Pull latest version from remote.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Update all repositories found relative to the given path or to the current path.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var root string
 		if len(args) == 0 {
@@ -61,5 +58,5 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(pullCmd)
-	pullCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	pullCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 }

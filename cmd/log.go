@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -11,14 +11,11 @@ import (
 
 // logCmd represents the log command
 var logCmd = &cobra.Command{
-	Use:   "log",
-	Short: "Get logs of found repositories.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "log <optinal path>",
+	Short: "Get logs of all repositories.",
+	Long: `Get logs of all repositories.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+If no path is given, it gets the logs of any Git repository relative to the current path.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var root string
 		if len(args) == 0 {
@@ -63,7 +60,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(logCmd)
-	logCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	logCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 	logCmd.Flags().IntP("num-commits", "n", 4, "Show only the last n commits")
 	logCmd.Flags().BoolP("oneline", "l", false, "Show short version of logs")
 }

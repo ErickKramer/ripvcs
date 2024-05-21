@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -13,14 +13,11 @@ import (
 
 // switchCmd represents the switch command
 var switchCmd = &cobra.Command{
-	Use:   "switch",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "switch <repo name | path>",
+	Short: "Switch repository version",
+	Long: `Switch repository version.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It allows to easily run Git switch operation on the given repository.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var repoName string
 		if len(args) == 0 {
@@ -65,5 +62,5 @@ func init() {
 	rootCmd.AddCommand(switchCmd)
 	switchCmd.Flags().BoolP("create", "c", false, "Create and switch to a new branch")
 	switchCmd.Flags().BoolP("detach", "d", false, "Detach HEAD at named commit or tag")
-	switchCmd.Flags().StringP("branch", "b", "", "Branch name")
+	switchCmd.Flags().StringP("branch", "b", "", "Version (branch, commit, or tag) to switch to")
 }

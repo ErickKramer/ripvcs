@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -13,14 +13,12 @@ import (
 
 // validateCmd represents the validate command
 var validateCmd = &cobra.Command{
-	Use:   "validate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "validate <.repos file>",
+	Short: "Validate a .repos file",
+	Long: `Validate a .repos file.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It checks that all the repositories in the given file have a reachable Git URL
+and that the provided version exist.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("Error: Repos file not given!")
@@ -68,5 +66,5 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
-	validateCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	validateCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 }

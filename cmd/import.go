@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -14,14 +14,14 @@ import (
 
 // importCmd represents the import command
 var importCmd = &cobra.Command{
-	Use:   "import",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "import <optional path>",
+	Short: "Import repositories listed in the given .repos file",
+	Long: `Import repositories listed in the given .repos file
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The repositories are cloned in the given path or in the current path.
+
+It supports recursively searching for any other .repos file found at each
+import cycle.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var cloningPath string
 		if len(args) == 0 {
@@ -57,7 +57,7 @@ func init() {
 	importCmd.Flags().BoolP("recursive", "r", false, "Recursively search of other `.repos` file in the cloned repositories")
 	importCmd.Flags().IntP("depth-recursive", "d", -1, "Regulates how many levels the recursive dependencies would be cloned.")
 	importCmd.Flags().BoolP("skip-if-existing", "s", false, "Skip existing repositories")
-	importCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 }
 
 func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting bool) bool {

@@ -2,29 +2,31 @@
 
 ## TODOs
 
-- [ ] Clone with `.repos`
-- [ ] Faster crawl of repositories
-- [ ] Support passing a `.repos` for the commands
-- [ ] Support switching branch given a name of a directory/repository
-- [ ] Ignore supported by `.gitignore`
-- [ ] Handle recursive `.repos`
-- [ ] Actually work with `skip-existing`
-- [ ] Handle tar and zip files
+- [x] Clone with `.repos`
+- [x] Faster crawl of repositories
+- [x] Support passing a `.repos` for the commands
+- [x] Support switching branch given a name of a directory/repository
+- [x] Handle recursive `.repos`
+- [x] Actually work with `skip-existing`
 
 ## Commands
 
-- [ ] `rv import`
+- [x] `rv import`
 - [x] `rv status `
-- [ ] `rv pull`
-- [ ] `rv switch`
-- [ ] `rv export`
+- [x] `rv pull`
+- [x] `rv switch`
 - [x] `rv validate`
-- [ ] `rv push`
+- [x] `rv sync`
 - [x] `rv log`
-- [ ] `rv custom`
 
 ## Requirements
 
 ```console
 go get -u github.com/spf13/cobra@latest
 ```
+
+## Possible enhancements
+
+- [ ] Support tar artifacts
+- [ ] Support export command
+- [ ] Support custom git commands

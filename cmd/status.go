@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 */
 package cmd
 
@@ -11,15 +11,11 @@ import (
 
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Check the status of any relative repository found relative to the given path.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "status <optional path>",
+	Short: "Check status of all repositories",
+	Long: `Check status of all repositories.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.MaximumNArgs(1), // Specify positional argument for the path
+If no path is given, it checks the status of any Git repository relative to the current path.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var root string
 		if len(args) == 0 {
@@ -33,7 +29,6 @@ to quickly create a Cobra application.`,
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 
 		// Create a channel to send work to the workers with a buffer size of length gitRepos
-		// HINT: The buffer size specifies how many elements the channel can hold before blocking sends
 		jobs := make(chan string, len(gitRepos))
 
 		// Create a channel to indicate when the go routines have finished
@@ -63,6 +58,6 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
-	statusCmd.Flags().IntP("workers", "w", 8, "Number of workers to use for concurrency")
+	statusCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 	statusCmd.Flags().BoolP("skip-empty", "s", false, "Skip repositories with clean working tree.")
 }
