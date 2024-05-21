@@ -4,9 +4,9 @@ import "fmt"
 
 const (
 	BlueColor   = "\033[38;2;137;180;250m"
-	GreenColor  = "\033[38;2;0;255;0m"
+	GreenColor = "\033[38;5;157m"
 	OrangeColor = "\033[38;2;255;165;0m"
-	PurpleColor = "\033[38;2;150;0;150m"
+	PurpleColor = "\033[38;5;183m"
 	RedColor    = "\033[38;2;255;0;0m"
 	ResetColor  = "\033[0m"
 )
