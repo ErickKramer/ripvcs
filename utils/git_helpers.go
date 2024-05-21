@@ -77,6 +77,23 @@ func PullGitRepo(path string) string {
 	return output
 }
 
+func StashGitRepo(path string, stashCmd string) string {
+	output, err := RunGitCmd(path, "stash", nil, []string{stashCmd}...)
+	if err != nil {
+		fmt.Printf("Failed to run stash with %s Git repository %s. Error: %s", stashCmd, path, err)
+	}
+	return output
+}
+
+func SyncGitRepo(path string) string {
+	output := StashGitRepo(path, "push")
+	output += PullGitRepo(path)
+	if StashGitRepo(path, "list") != "" {
+		output += StashGitRepo(path, "pop")
+	}
+	return output
+}
+
 func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 	var envConfig []string
 	if enablePrompt {
@@ -184,6 +201,12 @@ func PrintGitPull(path string) {
 	pullMsg := PullGitRepo(path)
 
 	PrintRepoEntry(path, string(pullMsg))
+}
+
+func PrintGitSync(path string) {
+	syncMsg := SyncGitRepo(path)
+
+	PrintRepoEntry(path, string(syncMsg))
 }
 
 func PrintCheckGit(path string, url string, version string, enablePrompt bool) bool {
