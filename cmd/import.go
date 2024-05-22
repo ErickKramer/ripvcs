@@ -31,7 +31,7 @@ import cycle.`,
 
 		// Get arguments
 		filePath, _ := cmd.Flags().GetString("input")
-		recursiveFlag, _ := cmd.Flags().GetBool("recusive")
+		recursiveFlag, _ := cmd.Flags().GetBool("recursive")
 		skipExisting, _ := cmd.Flags().GetBool("skip-if-existing")
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
@@ -136,7 +136,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 				clonedReposFiles[filePathToClone] = true
 				newReposFileFound = true
 				if !validFiles {
-					fmt.Println("Encountered errors while importing file")
+					utils.PrintErrorMsg("Encountered errors while importing file")
 				}
 			}
 		}
