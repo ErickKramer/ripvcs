@@ -228,7 +228,6 @@ func PrintCheckGit(path string, url string, version string, enablePrompt bool) b
 }
 
 func PrintGitClone(url string, version string, path string, skipIfExisting bool, enablePrompt bool) bool {
-	// FIXME: Sometimes printing may not be accurate!
 	var cloneMsg string
 	var cloneSuccessful bool
 	statusClone := GitClone(url, version, path, skipIfExisting, enablePrompt)
