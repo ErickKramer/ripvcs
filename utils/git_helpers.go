@@ -102,10 +102,14 @@ func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 		envConfig = []string{"GIT_TERMINAL_PROMPT=0"}
 	}
 
-	urlArgs := []string{url, branch}
+	var urlArgs []string
+	if branch == "" {
+		urlArgs = []string{url}
+	} else {
+		urlArgs = []string{url, branch}
+	}
 	output, err := RunGitCmd(".", "ls-remote", envConfig, urlArgs...)
 	if err != nil || len(output) == 0 {
-		// fmt.Printf("Failed to check Git URL %s. Error: %s", url, err)
 		return false
 	}
 	return true
