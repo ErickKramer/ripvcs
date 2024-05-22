@@ -52,7 +52,7 @@ func TestFindingReposFiles(t *testing.T) {
 	if err != nil || len(foundReposFiles) == 0 {
 		t.Errorf("Expected to find at least one .repos file %v", err)
 	}
-	foundReposFiles, err = utils.FindReposFiles("/tmp")
+	foundReposFiles, err = utils.FindReposFiles("../cmd/")
 
 	if err != nil || len(foundReposFiles) != 0 {
 		t.Errorf("Expected to not find any .repos file %v", err)
