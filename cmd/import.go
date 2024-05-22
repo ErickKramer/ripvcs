@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:   "import <optional path>",
 	Short: "Import repositories listed in the given .repos file",
@@ -70,14 +69,22 @@ func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting
 	}
 	// Create a channel to send work to the workers with a buffer size of length gitRepos
 	jobs := make(chan utils.RepositoryJob, len(config.Repositories))
+	// Create channel to collect results
+	results := make(chan bool, len(config.Repositories))
 	// Create a channel to indicate when the go routines have finished
 	done := make(chan bool)
 
-	validFile := false
 	for i := 0; i < numWorkers; i++ {
 		go func() {
 			for job := range jobs {
-				validFile = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.DirName, skipExisting, false)
+				if job.Repo.Type != "git" {
+					utils.PrintRepoEntry(job.DirName, "")
+					utils.PrintErrorMsg("Unsupported repository type.\n")
+					results <- false
+				} else {
+					success := utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.DirName, skipExisting, false)
+					results <- success
+				}
 			}
 			done <- true
 		}()
@@ -91,8 +98,15 @@ func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting
 	for i := 0; i < numWorkers; i++ {
 		<-done
 	}
+	close(results)
 
-	utils.PrintSeparator()
+	validFile := true
+	for result := range results {
+		if !result {
+			validFile = false
+			break
+		}
+	}
 	return validFile
 }
 
