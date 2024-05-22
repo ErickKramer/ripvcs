@@ -36,14 +36,22 @@ and that the provided version exist.`,
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		// Create a channel to send work to the workers with a buffer size of length gitRepos
 		jobs := make(chan utils.RepositoryJob, len(config.Repositories))
+		// Create channel to collect results
+		results := make(chan bool, len(config.Repositories))
 		// Create a channel to indicate when the go routines have finished
 		done := make(chan bool)
 
-		validFile := false
 		for i := 0; i < numWorkers; i++ {
 			go func() {
 				for job := range jobs {
-					validFile = utils.PrintCheckGit(job.DirName, job.Repo.URL, job.Repo.Version, false)
+					if job.Repo.Type != "git" {
+						utils.PrintRepoEntry(job.DirName, "")
+						utils.PrintErrorMsg("Unsupported repository type.\n")
+						results <- false
+					} else {
+						success := utils.PrintCheckGit(job.DirName, job.Repo.URL, job.Repo.Version, false)
+						results <- success
+					}
 				}
 				done <- true
 			}()
@@ -57,9 +65,11 @@ and that the provided version exist.`,
 		for i := 0; i < numWorkers; i++ {
 			<-done
 		}
-
-		if !validFile {
-			os.Exit(1)
+		close(results)
+		for result := range results {
+			if !result {
+				os.Exit(1)
+			}
 		}
 	},
 }
