@@ -73,6 +73,7 @@ Available Commands:
   switch      Switch repository version
   sync        Synchronize all found repositories.
   validate    Validate a .repos file
+  version     Print the version number
 ```
 
 Each of the available commands have their own help with information about their usage and available flags (e.g. `rv help import`).
