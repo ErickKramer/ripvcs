@@ -38,10 +38,10 @@ import cycle.`,
 
 		// Import repository files in the given file
 		validFile := singleCloneSweep(cloningPath, filePath, numWorkers, skipExisting)
+		if !validFile {
+			os.Exit(1)
+		}
 		if !recursiveFlag {
-			if !validFile {
-				os.Exit(1)
-			}
 			os.Exit(0)
 		}
 		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, skipExisting)
@@ -104,6 +104,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting
 	for result := range results {
 		if !result {
 			validFile = false
+			fmt.Printf("Failed while cloning %s\n", filePath)
 			break
 		}
 	}
@@ -137,6 +138,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 				newReposFileFound = true
 				if !validFiles {
 					utils.PrintErrorMsg("Encountered errors while importing file")
+					os.Exit(1)
 				}
 			}
 		}
@@ -146,7 +148,4 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 		cloneSweepCounter++
 	}
 
-	if !validFiles {
-		os.Exit(1)
-	}
 }
