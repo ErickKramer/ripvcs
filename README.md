@@ -89,13 +89,12 @@ Usage:
   rv import <optional path> [flags]
 
 Flags:
-  -d, --depth-recursive int   Regulates how many levels the recursive dependencies wou
-ld be cloned. (default -1)
+  -d, --depth-recursive int   Regulates how many levels the recursive dependencies would be cloned. (default -1)
   -h, --help                  help for import
   -i, --input .repos          Path to input .repos file
-  -r, --recursive .repos      Recursively search of other .repos file in the cloned re
-positories
-  -s, --skip-if-existing      Skip existing repositories
+  -r, --recursive .repos      Recursively search of other .repos file in the cloned repositories
+  -l, --shallow               Clone repositories with a depth of 1
+  -s, --skip                  Skip existing repositories
   -w, --workers int           Number of concurrent workers to use (default 8)
 ```
 

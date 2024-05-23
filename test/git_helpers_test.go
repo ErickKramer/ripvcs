@@ -78,7 +78,7 @@ func TestGitStatus(t *testing.T) {
 }
 
 func TestGitPull(t *testing.T) {
-	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	msg := utils.PullGitRepo("/tmp/testdata/demos")
@@ -107,23 +107,30 @@ func TestCheckGitUrl(t *testing.T) {
 }
 
 func TestCloneGitRepo(t *testing.T) {
-	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/ros2cli", "", "/tmp/testdata/ros2cli", false, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/ros2cli", "", "/tmp/testdata/ros2cli", false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/sadasdasd.git", "", "/tmp/testdata/sdasda", false, false) != utils.FailedClone {
+	if utils.GitClone("https://github.com/ros2/sadasdasd.git", "", "/tmp/testdata/sdasda", false, false, false) != utils.FailedClone {
 		t.Errorf("Expected to fail to clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, false) != utils.SkippedClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, false, false) != utils.SkippedClone {
 		t.Errorf("Expected to skip to clone git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", false, true, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully to clone git repository with shallow enabled")
+	}
+	count, err := utils.RunGitCmd("/tmp/testdata/demos", "rev-list", nil, []string{"--all", "--count"}...)
+	if err != nil || strings.TrimSpace(count) != "1" {
+		t.Errorf("Expected to have a shallow clone of the git repository")
 	}
 }
 
 func TestGitSwitch(t *testing.T) {
 	repoPath := "/tmp/testdata/switch_test"
-	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	output, err := utils.GitSwitch(repoPath, "humble", false, false)
