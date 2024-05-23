@@ -55,7 +55,7 @@ func init() {
 	importCmd.Flags().StringP("input", "i", "", "Path to input `.repos` file")
 	importCmd.Flags().BoolP("recursive", "r", false, "Recursively search of other `.repos` file in the cloned repositories")
 	importCmd.Flags().IntP("depth-recursive", "d", -1, "Regulates how many levels the recursive dependencies would be cloned.")
-	importCmd.Flags().BoolP("skip-if-existing", "s", false, "Skip existing repositories")
+	importCmd.Flags().BoolP("skip", "s", false, "Skip existing repositories")
 	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 }
 
