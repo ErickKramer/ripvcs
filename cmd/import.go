@@ -32,7 +32,7 @@ import cycle.`,
 		// Get arguments
 		filePath, _ := cmd.Flags().GetString("input")
 		recursiveFlag, _ := cmd.Flags().GetBool("recursive")
-		skipExisting, _ := cmd.Flags().GetBool("skip-if-existing")
+		skipExisting, _ := cmd.Flags().GetBool("skip")
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 
