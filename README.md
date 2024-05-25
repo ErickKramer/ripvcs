@@ -120,6 +120,19 @@ repositories:
 
 - [vcstool](https://github.com/dirk-thomas/vcstool)
 
+### Runtime comparison
+
+I ran a quick comparison between `rv` and `vcs` using the [valid_example.repos](./test/valid_example.repos) file for different commands using `8` workers.
+
+|    Command    |   vcs   |   rv    |
+| :-----------: | :-----: | :-----: |
+|    import     | 2.363 s | 1.753 s |
+| import + skip | 0.691 s | 0.004 s |
+|      log      | 0.248 s | 0.021 s |
+|     pull      | 0.635 s | 0.417 s |
+|    status     | 0.238 s | 0.035 s |
+|   validate    | 0.869 s | 0.414 s |
+
 ## Future enhancements
 
 - [ ] Support tar artifacts
