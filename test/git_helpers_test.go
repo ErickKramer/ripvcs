@@ -72,7 +72,10 @@ func TestFindGitRepos(t *testing.T) {
 }
 
 func TestGitStatus(t *testing.T) {
-	if utils.GetGitStatus("/tmp/testdata/valid_repo") == "" {
+	if utils.GetGitStatus("/tmp/testdata/valid_repo", false) == "" {
+		t.Errorf("Failed to check status of a valid repository")
+	}
+	if utils.GetGitStatus("/tmp/testdata/valid_repo", true) == "" {
 		t.Errorf("Failed to check status of a valid repository")
 	}
 }
