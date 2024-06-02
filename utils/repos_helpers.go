@@ -9,7 +9,6 @@ import (
 	"github.com/jesseduffield/yaml"
 )
 
-// Define a struct to hold the key and the repository
 type RepositoryJob struct {
 	DirName string
 	Repo    Repository
@@ -25,6 +24,7 @@ type Config struct {
 	Repositories map[string]Repository `yaml:"repositories"`
 }
 
+// IsReposFileValid Check if given filePath exists and if has .repos suffix
 func IsReposFileValid(filePath string) error {
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -37,6 +37,7 @@ func IsReposFileValid(filePath string) error {
 	return nil
 }
 
+// ParseReposFile Load data from a given .repos file
 func ParseReposFile(filePath string) (*Config, error) {
 	errValid := IsReposFileValid(filePath)
 	if errValid != nil {
@@ -68,6 +69,7 @@ func ParseReposFile(filePath string) (*Config, error) {
 
 }
 
+// FindReposFiles Search .repos files in a given path
 func FindReposFiles(rootPath string) ([]string, error) {
 	var foundReposFiles []string
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
@@ -83,6 +85,7 @@ func FindReposFiles(rootPath string) ([]string, error) {
 	return foundReposFiles, err
 }
 
+// FindDirectory Search for a targetDir given a rootPath
 func FindDirectory(rootPath string, targetDir string) (string, error) {
 	if len(rootPath) == 0 {
 		return "", errors.New("Empty rootPath given")
