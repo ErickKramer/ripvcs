@@ -47,6 +47,7 @@ func FindGitRepositories(root string) []string {
 	return gitRepos
 }
 
+// RunGitCmd Helper method to execute a git command
 func RunGitCmd(path string, gitCmd string, envConfig []string, args ...string) (string, error) {
 	cmdArgs := append([]string{"-c", "color.ui=always", gitCmd}, args...)
 	cmd := exec.Command("git", cmdArgs...)
@@ -69,6 +70,7 @@ func GetGitStatus(path string) string {
 	return output
 }
 
+// PullGitRepo Execute git pull in a given path
 func PullGitRepo(path string) string {
 	output, err := RunGitCmd(path, "pull", nil)
 	if err != nil {
@@ -77,6 +79,7 @@ func PullGitRepo(path string) string {
 	return output
 }
 
+// StashGitRepo Execute git stash in a given path
 func StashGitRepo(path string, stashCmd string) string {
 	output, err := RunGitCmd(path, "stash", nil, []string{stashCmd}...)
 	if err != nil {
@@ -85,6 +88,7 @@ func StashGitRepo(path string, stashCmd string) string {
 	return output
 }
 
+// SyncGitRepo Handle syncronization of a git repo
 func SyncGitRepo(path string) string {
 	output := StashGitRepo(path, "push")
 	output += PullGitRepo(path)
@@ -94,6 +98,7 @@ func SyncGitRepo(path string) string {
 	return output
 }
 
+// IsGitURLValid Check if a git URL is reachable
 func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 	var envConfig []string
 	if enablePrompt {
@@ -115,6 +120,7 @@ func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 	return true
 }
 
+// GetGitLog Get logs for a given git repository
 func GetGitLog(path string, oneline bool, numCommits int) string {
 	var cmdArgs []string
 
@@ -131,6 +137,7 @@ func GetGitLog(path string, oneline bool, numCommits int) string {
 	return output
 }
 
+// GitSwitch Switch version for a given git repository
 func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (string, error) {
 
 	cmdArgs := []string{}
@@ -150,6 +157,7 @@ func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (
 	return output, nil
 }
 
+// GitClone Clone a given repository URL
 func GitClone(url string, version string, clonePath string, skipIfExisting bool, shallowClone bool, enablePrompt bool) int {
 
 	// Check if clonePath exists
@@ -189,12 +197,13 @@ func GitClone(url string, version string, clonePath string, skipIfExisting bool,
 	return SuccessfullClone
 }
 
+// PrintGitLog Pretty print logs for a given git repository
 func PrintGitLog(path string, oneline bool, numCommits int) {
 	repoLogs := GetGitLog(path, oneline, numCommits)
 	PrintRepoEntry(path, string(repoLogs))
 }
 
-// PrintGitStatus Send the git status of a path to stdout with color codes.
+// PrintGitStatus Pretty print status for a given git repository
 func PrintGitStatus(path string, skipEmpty bool) {
 	repoStatus := GetGitStatus(path)
 
@@ -205,18 +214,21 @@ func PrintGitStatus(path string, skipEmpty bool) {
 	PrintRepoEntry(path, string(repoStatus))
 }
 
+// PrintGitPull Pretty print git pull output for a given git repository
 func PrintGitPull(path string) {
 	pullMsg := PullGitRepo(path)
 
 	PrintRepoEntry(path, string(pullMsg))
 }
 
+// PrintGitSync Pretty print git sync output for a given git repository
 func PrintGitSync(path string) {
 	syncMsg := SyncGitRepo(path)
 
 	PrintRepoEntry(path, string(syncMsg))
 }
 
+// PrintCheckGit Pretty print git url validation
 func PrintCheckGit(path string, url string, version string, enablePrompt bool) bool {
 	var checkMsg string
 	var isURLValid bool
@@ -231,6 +243,7 @@ func PrintCheckGit(path string, url string, version string, enablePrompt bool) b
 	return isURLValid
 }
 
+// PrintGitClone Pretty print git clone
 func PrintGitClone(url string, version string, path string, skipIfExisting bool, shallowClone bool, enablePrompt bool) bool {
 	var cloneMsg string
 	var cloneSuccessful bool
@@ -252,6 +265,7 @@ func PrintGitClone(url string, version string, path string, skipIfExisting bool,
 	return cloneSuccessful
 }
 
+// PrintGitSwitch Pretty print git switch
 func PrintGitSwitch(path string, branch string, createBranch bool, detachHead bool) bool {
 	switchMsg, err := GitSwitch(path, branch, createBranch, detachHead)
 	if err == nil {
