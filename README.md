@@ -120,6 +120,20 @@ repositories:
 
 - [vcstool](https://github.com/dirk-thomas/vcstool)
 
+## Shell completions
+
+`rv` supports generating an autocompletion script for bash, fish, powershell, and zsh
+
+For example, to configure to generate the completion for zsh do the following
+
+```console
+rv completion zsh _ripvcs
+```
+
+Then, you need to place the completion file in the proper location to be loaded by your zsh configuration.
+
+Afterwards, you should be able to do `rv <TAB>` to get autocompletion for the available commands and `rv import -<TAB>` to get autocompletion for the available flags.
+
 ### Runtime comparison
 
 I ran a quick comparison between `rv` and `vcs` using the [valid_example.repos](./test/valid_example.repos) file for different commands using `8` workers.
