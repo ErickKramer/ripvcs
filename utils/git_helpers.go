@@ -62,8 +62,12 @@ func RunGitCmd(path string, gitCmd string, envConfig []string, args ...string) (
 }
 
 // GetGitStatus Execute git status in a given path
-func GetGitStatus(path string) string {
-	output, err := RunGitCmd(path, "status", nil)
+func GetGitStatus(path string, plainStatus bool) string {
+	var statusArgs []string
+	if plainStatus {
+		statusArgs = []string{"-sb"}
+	}
+	output, err := RunGitCmd(path, "status", nil, statusArgs...)
 	if err != nil {
 		fmt.Printf("Failed to check Git status of %s. Error: %s", path, err)
 	}
@@ -204,11 +208,17 @@ func PrintGitLog(path string, oneline bool, numCommits int) {
 }
 
 // PrintGitStatus Pretty print status for a given git repository
-func PrintGitStatus(path string, skipEmpty bool) {
-	repoStatus := GetGitStatus(path)
+func PrintGitStatus(path string, skipEmpty bool, plainStatus bool) {
+	repoStatus := GetGitStatus(path, plainStatus)
 
-	if skipEmpty && strings.Contains(repoStatus, "working tree clean") {
-		return
+	if plainStatus {
+		if skipEmpty && strings.Count(repoStatus, "\n") <= 1 {
+			return
+		}
+	} else {
+		if skipEmpty && strings.Contains(repoStatus, "working tree clean") {
+			return
+		}
 	}
 
 	PrintRepoEntry(path, string(repoStatus))

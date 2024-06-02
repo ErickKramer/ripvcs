@@ -25,6 +25,7 @@ If no path is given, it checks the status of any Git repository relative to the 
 		}
 		gitRepos := utils.FindGitRepositories(root)
 
+		plainStatus, _ := cmd.Flags().GetBool("plain")
 		skipEmtpy, _ := cmd.Flags().GetBool("skip-empty")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 
@@ -38,7 +39,7 @@ If no path is given, it checks the status of any Git repository relative to the 
 		for i := 0; i < numWorkers; i++ {
 			go func() {
 				for repo := range jobs {
-					utils.PrintGitStatus(repo, skipEmtpy)
+					utils.PrintGitStatus(repo, skipEmtpy, plainStatus)
 				}
 				done <- true
 			}()
@@ -59,5 +60,6 @@ If no path is given, it checks the status of any Git repository relative to the 
 func init() {
 	rootCmd.AddCommand(statusCmd)
 	statusCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
+	statusCmd.Flags().BoolP("plain", "p", false, "Show simpler status report")
 	statusCmd.Flags().BoolP("skip-empty", "s", false, "Skip repositories with clean working tree.")
 }
