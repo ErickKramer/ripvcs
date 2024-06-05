@@ -32,20 +32,21 @@ import cycle.`,
 		// Get arguments
 		filePath, _ := cmd.Flags().GetString("input")
 		recursiveFlag, _ := cmd.Flags().GetBool("recursive")
+		numRetries, _ := cmd.Flags().GetInt("retry")
 		skipExisting, _ := cmd.Flags().GetBool("skip")
 		shallowClone, _ := cmd.Flags().GetBool("shallowClone")
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 
 		// Import repository files in the given file
-		validFile := singleCloneSweep(cloningPath, filePath, numWorkers, skipExisting, shallowClone)
+		validFile := singleCloneSweep(cloningPath, filePath, numWorkers, skipExisting, shallowClone, numRetries)
 		if !validFile {
 			os.Exit(1)
 		}
 		if !recursiveFlag {
 			os.Exit(0)
 		}
-		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, skipExisting, shallowClone)
+		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, skipExisting, shallowClone, numRetries)
 
 	},
 }
@@ -56,12 +57,13 @@ func init() {
 	importCmd.Flags().IntP("depth-recursive", "d", -1, "Regulates how many levels the recursive dependencies would be cloned.")
 	importCmd.Flags().StringP("input", "i", "", "Path to input `.repos` file")
 	importCmd.Flags().BoolP("recursive", "r", false, "Recursively search of other `.repos` file in the cloned repositories")
+	importCmd.Flags().IntP("retry", "n", 2, "Number of attempts to import repositories")
 	importCmd.Flags().BoolP("skip", "s", false, "Skip existing repositories")
 	importCmd.Flags().BoolP("shallow", "l", false, "Clone repositories with a depth of 1")
 	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 }
 
-func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting bool, shallowClone bool) bool {
+func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting bool, shallowClone bool, numRetries int) bool {
 	utils.PrintSection(fmt.Sprintf("Importing from %s", filePath))
 	utils.PrintSeparator()
 	config, err := utils.ParseReposFile(filePath)
@@ -84,7 +86,13 @@ func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting
 					utils.PrintErrorMsg("Unsupported repository type.\n")
 					results <- false
 				} else {
-					success := utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.DirName, skipExisting, shallowClone, false)
+					success := false
+					for i := 0; i < numRetries; i++ {
+						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.DirName, skipExisting, shallowClone, false)
+						if success {
+							break
+						}
+					}
 					results <- success
 				}
 			}
@@ -113,7 +121,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, skipExisting
 	return validFile
 }
 
-func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, skipExisting bool, shallowClone bool) {
+func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, skipExisting bool, shallowClone bool, numRetries int) {
 	// Recursively import .repos files found
 	clonedReposFiles := map[string]bool{initialFilePath: true}
 	validFiles := true
@@ -135,7 +143,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 		newReposFileFound := false
 		for _, filePathToClone := range foundReposFiles {
 			if _, ok := clonedReposFiles[filePathToClone]; !ok {
-				validFiles = singleCloneSweep(cloningPath, filePathToClone, numWorkers, skipExisting, shallowClone)
+				validFiles = singleCloneSweep(cloningPath, filePathToClone, numWorkers, skipExisting, shallowClone, numRetries)
 				clonedReposFiles[filePathToClone] = true
 				newReposFileFound = true
 				if !validFiles {
