@@ -7,7 +7,7 @@ const (
 	GreenColor  = "\033[38;5;157m"
 	OrangeColor = "\033[38;2;250;179;135m"
 	PurpleColor = "\033[38;5;183m"
-	RedColor = "\033[38;2;243;139;168m"
+	RedColor    = "\033[38;2;243;139;168m"
 	ResetColor  = "\033[0m"
 )
 
