@@ -97,3 +97,40 @@ func TestFindDirectory(t *testing.T) {
 	}
 
 }
+
+func TestParseRepositoryInfo(t *testing.T) {
+	repository := utils.ParseRepositoryInfo("", false)
+	if repository.Type != "" || repository.Version != "" || repository.URL != "" {
+		t.Errorf("Expected to get an empty repository object")
+	}
+	repoPath := "/tmp/testdata/demos_parse"
+	repoURL := "https://github.com/ros2/demos.git"
+	repoVersion := "rolling"
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+
+	repository = utils.ParseRepositoryInfo(repoPath, false)
+	if repository.Type != "git" || repository.Version != repoVersion || repository.URL != repoURL {
+		t.Errorf("Failed to properly parse the repository info using branch")
+	}
+
+	repoVersion = "839b622bc40ec62307d6ba0615adb9b8bd1cbc30"
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	repository = utils.ParseRepositoryInfo(repoPath, true)
+	if repository.Type != "git" || repository.Version != repoVersion || repository.URL != repoURL {
+		t.Errorf("Failed to properly parse the repository info using commit")
+	}
+
+	repoVersion = "0.34.0"
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	repository = utils.ParseRepositoryInfo(repoPath, false)
+	if repository.Type != "git" || repository.Version != repoVersion || repository.URL != repoURL {
+		t.Errorf("Failed to properly parse the repository info using tag")
+	}
+
+}

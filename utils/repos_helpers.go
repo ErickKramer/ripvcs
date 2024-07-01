@@ -116,3 +116,19 @@ func FindDirectory(rootPath string, targetDir string) (string, error) {
 	}
 	return dirPath, nil
 }
+
+// ParseRepositoryInfo Create a Repository object containing the given repository info
+func ParseRepositoryInfo(repoPath string, useCommit bool) Repository {
+	var repository Repository
+	if !IsGitRepository(repoPath) {
+		return repository
+	}
+	repository.Type = "git"
+	repository.URL = GetGitRemoteURL(repoPath)
+	if useCommit {
+		repository.Version = GetGitCommitSha(repoPath)
+	} else {
+		repository.Version = GetGitBranch(repoPath)
+	}
+	return repository
+}
