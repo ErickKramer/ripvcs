@@ -81,6 +81,14 @@ func GetGitBranch(path string) string {
 	if err != nil {
 		fmt.Printf("Failed to get current Git branch of %s. Error: %s", path, err)
 	}
+	if output != "" {
+		return strings.TrimSpace(output)
+	}
+	checkTagArgs := []string{"--points-at", "HEAD"}
+	output, err = RunGitCmd(path, "tag", nil, checkTagArgs...)
+	if err != nil {
+		fmt.Printf("Failed to get current Git branch of %s. Error: %s", path, err)
+	}
 	return strings.TrimSpace(output)
 }
 
@@ -89,6 +97,15 @@ func GetGitCommitSha(path string) string {
 	output, err := RunGitCmd(path, "rev-parse", nil, cmdArgs...)
 	if err != nil {
 		fmt.Printf("Failed to get current Git commit of %s. Error: %s", path, err)
+	}
+	return strings.TrimSpace(output)
+}
+
+func GetGitRemoteURL(path string) string {
+	cmdArgs := []string{"get-url", "origin"}
+	output, err := RunGitCmd(path, "remote", nil, cmdArgs...)
+	if err != nil {
+		fmt.Printf("Failed to get URL for the origin remote of %s. Error: %s", path, err)
 	}
 	return strings.TrimSpace(output)
 }

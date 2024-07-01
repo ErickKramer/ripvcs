@@ -65,6 +65,7 @@ Usage:
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
+  export      Export list of available repositories
   help        Help about any command
   import      Import repositories listed in the given .repos file
   log         Get logs of all repositories.
