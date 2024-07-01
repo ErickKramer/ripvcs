@@ -91,11 +91,12 @@ Usage:
 
 Flags:
   -d, --depth-recursive int   Regulates how many levels the recursive dependencies would be cloned. (default -1)
+  -f, --force                 Force overwriting existing repositories
   -h, --help                  help for import
   -i, --input .repos          Path to input .repos file
   -r, --recursive .repos      Recursively search of other .repos file in the cloned repositories
+  -n, --retry int             Number of attempts to import repositories (default 2)
   -l, --shallow               Clone repositories with a depth of 1
-  -s, --skip                  Skip existing repositories
   -w, --workers int           Number of concurrent workers to use (default 8)
 ```
 
@@ -138,14 +139,14 @@ Afterwards, you should be able to do `rv <TAB>` to get autocompletion for the av
 
 I ran a quick comparison between `rv` and `vcs` using the [valid_example.repos](./test/valid_example.repos) file for different commands using `8` workers.
 
-|    Command    |   vcs   |   rv    |
-| :-----------: | :-----: | :-----: |
-|    import     | 2.363 s | 1.753 s |
-| import + skip | 0.691 s | 0.004 s |
-|      log      | 0.248 s | 0.021 s |
-|     pull      | 0.635 s | 0.417 s |
-|    status     | 0.238 s | 0.035 s |
-|   validate    | 0.869 s | 0.414 s |
+|      Command       |   vcs   |   rv    |
+| :----------------: | :-----: | :-----: |
+| import (overwrite) | 2.363 s | 1.753 s |
+|   import + skip    | 0.691 s | 0.004 s |
+|        log         | 0.248 s | 0.021 s |
+|        pull        | 0.635 s | 0.417 s |
+|       status       | 0.238 s | 0.035 s |
+|      validate      | 0.869 s | 0.414 s |
 
 ## Future enhancements
 

@@ -162,11 +162,11 @@ func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (
 }
 
 // GitClone Clone a given repository URL
-func GitClone(url string, version string, clonePath string, skipIfExisting bool, shallowClone bool, enablePrompt bool) int {
+func GitClone(url string, version string, clonePath string, overwriteExisting bool, shallowClone bool, enablePrompt bool) int {
 
 	// Check if clonePath exists
 	if _, err := os.Stat(clonePath); err == nil {
-		if skipIfExisting {
+		if !overwriteExisting {
 			return SkippedClone
 		} else {
 			// Remove existing clonePath
@@ -254,10 +254,10 @@ func PrintCheckGit(path string, url string, version string, enablePrompt bool) b
 }
 
 // PrintGitClone Pretty print git clone
-func PrintGitClone(url string, version string, path string, skipIfExisting bool, shallowClone bool, enablePrompt bool) bool {
+func PrintGitClone(url string, version string, path string, overwriteExisting bool, shallowClone bool, enablePrompt bool) bool {
 	var cloneMsg string
 	var cloneSuccessful bool
-	statusClone := GitClone(url, version, path, skipIfExisting, shallowClone, enablePrompt)
+	statusClone := GitClone(url, version, path, overwriteExisting, shallowClone, enablePrompt)
 	switch statusClone {
 	case SuccessfullClone:
 		cloneMsg = fmt.Sprintf("Successfully cloned git repository '%s' with version '%s'\n", url, version)
