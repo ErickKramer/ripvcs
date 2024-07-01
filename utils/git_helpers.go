@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -72,6 +73,24 @@ func GetGitStatus(path string, plainStatus bool) string {
 		fmt.Printf("Failed to check Git status of %s. Error: %s", path, err)
 	}
 	return output
+}
+
+// GetGitBranch Get current git branch in a given path
+func GetGitBranch(path string) string {
+	output, err := RunGitCmd(path, "branch", nil, "--show-current")
+	if err != nil {
+		fmt.Printf("Failed to get current Git branch of %s. Error: %s", path, err)
+	}
+	return strings.TrimSpace(output)
+}
+
+func GetGitCommitSha(path string) string {
+	cmdArgs := []string{"--verify", "HEAD"}
+	output, err := RunGitCmd(path, "rev-parse", nil, cmdArgs...)
+	if err != nil {
+		fmt.Printf("Failed to get current Git commit of %s. Error: %s", path, err)
+	}
+	return strings.TrimSpace(output)
 }
 
 // PullGitRepo Execute git pull in a given path
@@ -161,6 +180,13 @@ func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (
 	return output, nil
 }
 
+// IsValidSha Check if sha given is a valid SHA1
+func IsValidSha(sha string) bool {
+	shaRegex := regexp.MustCompile(`^[a-fA-F0-9]{7,40}$`)
+	return shaRegex.MatchString(sha)
+
+}
+
 // GitClone Clone a given repository URL
 func GitClone(url string, version string, clonePath string, overwriteExisting bool, shallowClone bool, enablePrompt bool) int {
 
@@ -185,7 +211,9 @@ func GitClone(url string, version string, clonePath string, overwriteExisting bo
 	}
 
 	var cmdArgs []string
-	if version == "" {
+
+	versionIsSha := IsValidSha(version)
+	if version == "" || versionIsSha {
 		cmdArgs = []string{url, clonePath}
 	} else {
 		cmdArgs = []string{url, "--branch", version, clonePath}
@@ -194,10 +222,16 @@ func GitClone(url string, version string, clonePath string, overwriteExisting bo
 	if shallowClone {
 		cmdArgs = append(cmdArgs, "--depth", "1")
 	}
-	_, err := RunGitCmd(".", "clone", envConfig, cmdArgs...)
-	if err != nil {
+	if _, err := RunGitCmd(".", "clone", envConfig, cmdArgs...); err != nil {
 		return FailedClone
 	}
+
+	if versionIsSha {
+		if _, err := GitSwitch(clonePath, version, false, true); err != nil {
+			return FailedClone
+		}
+	}
+
 	return SuccessfullClone
 }
 
