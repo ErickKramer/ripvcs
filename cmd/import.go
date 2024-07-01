@@ -82,13 +82,13 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 		go func() {
 			for job := range jobs {
 				if job.Repo.Type != "git" {
-					utils.PrintRepoEntry(job.DirName, "")
+					utils.PrintRepoEntry(job.RepoPath, "")
 					utils.PrintErrorMsg("Unsupported repository type.\n")
 					results <- false
 				} else {
 					success := false
 					for i := 0; i < numRetries; i++ {
-						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.DirName, overwriteExisting, shallowClone, false)
+						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.RepoPath, overwriteExisting, shallowClone, false)
 						if success {
 							break
 						}
@@ -101,7 +101,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	}
 
 	for dirName, repo := range config.Repositories {
-		jobs <- utils.RepositoryJob{DirName: filepath.Join(root, dirName), Repo: repo}
+		jobs <- utils.RepositoryJob{RepoPath: filepath.Join(root, dirName), Repo: repo}
 	}
 	close(jobs)
 	// wait for all goroutines to finish
