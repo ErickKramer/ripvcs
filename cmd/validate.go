@@ -45,11 +45,11 @@ and that the provided version exist.`,
 			go func() {
 				for job := range jobs {
 					if job.Repo.Type != "git" {
-						utils.PrintRepoEntry(job.DirName, "")
+						utils.PrintRepoEntry(job.RepoPath, "")
 						utils.PrintErrorMsg("Unsupported repository type.\n")
 						results <- false
 					} else {
-						success := utils.PrintCheckGit(job.DirName, job.Repo.URL, job.Repo.Version, false)
+						success := utils.PrintCheckGit(job.RepoPath, job.Repo.URL, job.Repo.Version, false)
 						results <- success
 					}
 				}
@@ -58,7 +58,7 @@ and that the provided version exist.`,
 		}
 
 		for key, repo := range config.Repositories {
-			jobs <- utils.RepositoryJob{DirName: key, Repo: repo}
+			jobs <- utils.RepositoryJob{RepoPath: key, Repo: repo}
 		}
 		close(jobs)
 		// wait for all goroutines to finish

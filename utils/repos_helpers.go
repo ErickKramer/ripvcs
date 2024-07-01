@@ -10,7 +10,7 @@ import (
 )
 
 type RepositoryJob struct {
-	DirName string
+	RepoPath string
 	Repo    Repository
 }
 
