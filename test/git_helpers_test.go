@@ -110,7 +110,8 @@ func TestCheckGitUrl(t *testing.T) {
 }
 
 func TestCloneGitRepo(t *testing.T) {
-	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
+	repoPath := "/tmp/testdata/demos_clone"
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	if utils.GitClone("https://github.com/ros2/ros2cli", "", "/tmp/testdata/ros2cli", false, false, false) != utils.SuccessfullClone {
@@ -119,10 +120,13 @@ func TestCloneGitRepo(t *testing.T) {
 	if utils.GitClone("https://github.com/ros2/sadasdasd.git", "", "/tmp/testdata/sdasda", false, false, false) != utils.FailedClone {
 		t.Errorf("Expected to fail to clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, false, false) != utils.SkippedClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, false, false, false) != utils.SkippedClone {
 		t.Errorf("Expected to skip to clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", false, true, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, true, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to overwrite found git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, true, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with shallow enabled")
 	}
 	count, err := utils.RunGitCmd("/tmp/testdata/demos", "rev-list", nil, []string{"--all", "--count"}...)
