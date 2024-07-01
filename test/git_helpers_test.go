@@ -80,6 +80,22 @@ func TestGitStatus(t *testing.T) {
 	}
 }
 
+func TestGetGitBranch(t *testing.T) {
+	if utils.GetGitBranch("/tmp/testdata/valid_repo") != "main" {
+		t.Errorf("Failed to get main branch for valid git repository")
+	}
+}
+
+func TestGetGitCommitSha(t *testing.T) {
+	testingSha := "839b622bc40ec62307d6ba0615adb9b8bd1cbc30"
+	if utils.GitClone("https://github.com/ros2/demos.git", testingSha, "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	if utils.GetGitCommitSha("/tmp/testdata/demos") != testingSha {
+		t.Errorf("Failed to pull valid repository.")
+	}
+}
+
 func TestGitPull(t *testing.T) {
 	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
@@ -109,9 +125,44 @@ func TestCheckGitUrl(t *testing.T) {
 	}
 }
 
+func TestIsValidCommitSha(t *testing.T) {
+	if !utils.IsValidSha("e69de29bb2d1d6434b8b29ae775ad8c2e48c5391") {
+		t.Errorf("Expected to return valid SHA")
+	}
+	if !utils.IsValidSha("839b622") {
+		t.Errorf("Expected to return valid SHA")
+	}
+	if utils.IsValidSha("INVALIDSHA123456789012345678901234567890") {
+		t.Errorf("Expected to return invalid SHA")
+	}
+	if utils.IsValidSha("11111111111111111111111111111111111111111") {
+		t.Errorf("Expected to return invalid SHA. Invalid length (41 chars)")
+	}
+	if utils.IsValidSha("") {
+		t.Errorf("Expected to return invalid SHA. Invalid length (0 chars)")
+	}
+	if utils.IsValidSha("999999") {
+		t.Errorf("Expected to return invalid SHA. Invalid length (6 chars)")
+	}
+}
+
 func TestCloneGitRepo(t *testing.T) {
 	repoPath := "/tmp/testdata/demos_clone"
 	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false, false) != utils.SuccessfullClone {
+	testingSha := "839b622bc40ec62307d6ba0615adb9b8bd1cbc30"
+	if utils.GitClone("https://github.com/ros2/demos.git", testingSha, "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository given a SHA")
+	}
+	// FIXME: This part is still broken
+	if utils.GitClone("https://github.com/ros2/demos.git", testingSha, "/tmp/testdata/demos", false, true, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository given a SHA")
+	}
+	count, err := utils.RunGitCmd("/tmp/testdata/demos", "rev-list", nil, []string{"--all", "--count"}...)
+	if err != nil || strings.TrimSpace(count) != "1" {
+		t.Errorf("Expected to have a shallow clone of the git repository")
+	}
+
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", "/tmp/testdata/demos", false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	if utils.GitClone("https://github.com/ros2/ros2cli", "", "/tmp/testdata/ros2cli", false, false, false) != utils.SuccessfullClone {
@@ -129,7 +180,7 @@ func TestCloneGitRepo(t *testing.T) {
 	if utils.GitClone("https://github.com/ros2/demos.git", "", "/tmp/testdata/demos", true, true, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with shallow enabled")
 	}
-	count, err := utils.RunGitCmd("/tmp/testdata/demos", "rev-list", nil, []string{"--all", "--count"}...)
+	count, err = utils.RunGitCmd("/tmp/testdata/demos", "rev-list", nil, []string{"--all", "--count"}...)
 	if err != nil || strings.TrimSpace(count) != "1" {
 		t.Errorf("Expected to have a shallow clone of the git repository")
 	}
