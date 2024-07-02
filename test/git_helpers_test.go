@@ -81,12 +81,16 @@ func TestGitStatus(t *testing.T) {
 }
 
 func TestGetGitBranch(t *testing.T) {
-	if utils.GetGitBranch("/tmp/testdata/valid_repo") != "main" {
+	testingBranch := "jazzy"
+	repoPath := "/tmp/testdata/demos_branch"
+	if utils.GitClone("https://github.com/ros2/demos.git", testingBranch, repoPath, true, false, false) != utils.SuccessfullClone {
+		t.Errorf("Expected to successfully clone git repository")
+	}
+	if utils.GetGitBranch(repoPath) != testingBranch {
 		t.Errorf("Failed to get main branch for valid git repository")
 	}
 	testingTag := "0.34.0"
-	repoPath := "/tmp/testdata/demos_branch"
-	if utils.GitClone("https://github.com/ros2/demos.git", testingTag, repoPath, false, false, false) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", testingTag, repoPath, true, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	obtainedTag := utils.GetGitBranch(repoPath)
