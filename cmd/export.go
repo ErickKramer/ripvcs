@@ -4,6 +4,7 @@ Copyright © 2024 Erick Kramer <erickkramer@gmail.com>
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"ripvcs/utils"
@@ -29,8 +30,15 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		gitRepos := utils.FindGitRepositories(root)
 
 		filePath, _ := cmd.Flags().GetString("output")
+
+		if len(filePath) == 0 {
+			utils.PrintErrorMsg("Missing output file.")
+			os.Exit(1)
+		}
+
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		getCommitsFlag, _ := cmd.Flags().GetBool("commits")
+		visualizeOutput, _ := cmd.Flags().GetBool("visualize")
 
 		// Create a channel to send work to the workers with a buffer size of length gitRepos
 		jobs := make(chan string, len(gitRepos))
@@ -68,6 +76,9 @@ If no path is given, it checks the finds any Git repository relative to the curr
 			config.Repositories[repoResult.RepoPath] = repoResult.Repo
 		}
 		yamlData, _ := yaml.Marshal(&config)
+		if visualizeOutput {
+			fmt.Println(string(yamlData))
+		}
 		err := os.WriteFile(filePath, yamlData, 0644)
 		if err != nil {
 			utils.PrintErrorMsg("Failed to export repositories to yaml file.")
@@ -81,4 +92,5 @@ func init() {
 	exportCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 	exportCmd.Flags().StringP("output", "o", "", "Path to output `.repos` file")
 	exportCmd.Flags().BoolP("commits", "c", false, "Export repositories hashes instead of branches")
+	exportCmd.Flags().BoolP("visualize", "v", false, "Show the information to be stored in the output file")
 }
