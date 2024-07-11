@@ -54,8 +54,15 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		for i := 0; i < numWorkers; i++ {
 			go func() {
 				for repoPath := range jobs {
+					var repoPathName string
+					if repoPath == "." {
+						absPath, _ := filepath.Abs(repoPath)
+						repoPathName = filepath.Base(absPath)
+					} else {
+						repoPathName = filepath.Base(repoPath)
+					}
 					repo := utils.ParseRepositoryInfo(repoPath, getCommitsFlag)
-					repositories <- utils.RepositoryJob{RepoPath: filepath.Base(repoPath), Repo: repo}
+					repositories <- utils.RepositoryJob{RepoPath: repoPathName, Repo: repo}
 				}
 				done <- true
 			}()
