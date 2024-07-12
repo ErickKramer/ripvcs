@@ -139,7 +139,7 @@ func SyncGitRepo(path string) string {
 }
 
 // IsGitURLValid Check if a git URL is reachable
-func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
+func IsGitURLValid(url string, version string, enablePrompt bool) (bool, error) {
 	var envConfig []string
 	if enablePrompt {
 		envConfig = []string{"GIT_TERMINAL_PROMPT=1"}
@@ -148,16 +148,23 @@ func IsGitURLValid(url string, branch string, enablePrompt bool) bool {
 	}
 
 	var urlArgs []string
-	if branch == "" {
-		urlArgs = []string{url}
+	var output string
+	var err error
+
+	if IsValidSha(version) {
+		err = fmt.Errorf("validation of URL given a commit SHA is currently not supported")
 	} else {
-		urlArgs = []string{url, branch}
+		if version == "" {
+			urlArgs = []string{url}
+		} else {
+			urlArgs = []string{url, version}
+		}
+		output, err = RunGitCmd(".", "ls-remote", envConfig, urlArgs...)
 	}
-	output, err := RunGitCmd(".", "ls-remote", envConfig, urlArgs...)
 	if err != nil || len(output) == 0 {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
 // GetGitLog Get logs for a given git repository
@@ -293,12 +300,10 @@ func PrintGitSync(path string) {
 func PrintCheckGit(path string, url string, version string, enablePrompt bool) bool {
 	var checkMsg string
 	var isURLValid bool
-	if !IsGitURLValid(url, version, enablePrompt) {
-		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s'%s\n", RedColor, url, version, ResetColor)
-		isURLValid = false
+	if isURLValid, err := IsGitURLValid(url, version, enablePrompt); !isURLValid {
+		checkMsg = fmt.Sprintf("%sFailed to contact git repository '%s' with version '%s'. Error: %v%s\n", RedColor, url, version, err, ResetColor)
 	} else {
 		checkMsg = fmt.Sprintf("Successfully contact git repository '%s' with version '%s'\n", url, version)
-		isURLValid = true
 	}
 	PrintRepoEntry(path, checkMsg)
 	return isURLValid
