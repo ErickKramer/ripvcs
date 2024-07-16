@@ -26,7 +26,7 @@ import cycle.`,
 		if len(args) == 0 {
 			cloningPath = "."
 		} else {
-			cloningPath = args[0]
+			cloningPath = utils.GetRepoPath(args[0])
 		}
 
 		// Get arguments

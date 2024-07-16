@@ -25,7 +25,7 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		if len(args) == 0 {
 			root = "."
 		} else {
-			root = args[0]
+			root = utils.GetRepoPath(args[0])
 		}
 		gitRepos := utils.FindGitRepositories(root)
 
