@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,7 @@ import (
 
 type RepositoryJob struct {
 	RepoPath string
-	Repo    Repository
+	Repo     Repository
 }
 
 type Repository struct {
@@ -131,4 +132,28 @@ func ParseRepositoryInfo(repoPath string, useCommit bool) Repository {
 		repository.Version = GetGitBranch(repoPath)
 	}
 	return repository
+}
+
+func GetRepoPath(repoName string) string {
+	repoNameInfo, err := os.Stat(repoName)
+
+	if err == nil {
+		if !repoNameInfo.IsDir() {
+			PrintErrorMsg(fmt.Sprintf("%s is not a directory\n", repoName))
+			os.Exit(1)
+		}
+		return repoName
+	}
+
+	if !os.IsNotExist(err) {
+		PrintErrorMsg(fmt.Sprintf("Error checking repository: %s\n", repoName))
+		os.Exit(1)
+	}
+
+	foundRepoPath, findErr := FindDirectory(".", repoName)
+	if findErr != nil {
+		PrintErrorMsg(fmt.Sprintf("Failed to find directory named %s. Error: %s\n", repoName, findErr))
+		os.Exit(1)
+	}
+	return foundRepoPath
 }

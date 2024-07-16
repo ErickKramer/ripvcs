@@ -19,33 +19,12 @@ var switchCmd = &cobra.Command{
 
 It allows to easily run Git switch operation on the given repository.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var repoName string
+		// var repoName string
 		if len(args) == 0 {
-			fmt.Println("Repository Name or Path not given")
+			utils.PrintErrorMsg("Repository Name or Path not given\n")
 			os.Exit(1)
 		}
-		repoName = args[0]
-
-		var repoPath string
-		// check if input is not a path
-		if repoNameInfo, err := os.Stat(repoName); err != nil {
-			if os.IsNotExist(err) {
-				foundRepoPath, findErr := utils.FindDirectory(".", repoName)
-				if findErr != nil {
-					fmt.Printf("Failed to find directory named %s. Error: %s\n", repoPath, findErr)
-					os.Exit(1)
-				}
-				repoPath = foundRepoPath
-			} else {
-				fmt.Printf("Error checking repoName: %s\n", err)
-				os.Exit(1)
-			}
-		} else if !repoNameInfo.IsDir() {
-			fmt.Printf("%s is not a directory\n", repoName)
-			os.Exit(1)
-		} else {
-			repoPath = repoName
-		}
+		repoPath := utils.GetRepoPath(args[0])
 
 		if !utils.IsGitRepository(repoPath) {
 			fmt.Println("Directory given is not a git repository")

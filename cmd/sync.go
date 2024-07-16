@@ -22,7 +22,7 @@ and bring back staged changes.`,
 		if len(args) == 0 {
 			root = "."
 		} else {
-			root = args[0]
+			root = utils.GetRepoPath(args[0])
 		}
 		gitRepos := utils.FindGitRepositories(root)
 
