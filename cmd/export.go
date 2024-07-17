@@ -30,15 +30,21 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		gitRepos := utils.FindGitRepositories(root)
 
 		filePath, _ := cmd.Flags().GetString("output")
+		visualizeOutput, _ := cmd.Flags().GetBool("visualize")
+
+		skipOutputFile := false
 
 		if len(filePath) == 0 {
-			utils.PrintErrorMsg("Missing output file.")
-			os.Exit(1)
+			if visualizeOutput {
+				skipOutputFile = true
+			} else {
+				utils.PrintErrorMsg("Missing output file.")
+				os.Exit(1)
+			}
 		}
 
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		getCommitsFlag, _ := cmd.Flags().GetBool("commits")
-		visualizeOutput, _ := cmd.Flags().GetBool("visualize")
 
 		// Create a channel to send work to the workers with a buffer size of length gitRepos
 		jobs := make(chan string, len(gitRepos))
@@ -86,10 +92,12 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		if visualizeOutput {
 			fmt.Println(string(yamlData))
 		}
-		err := os.WriteFile(filePath, yamlData, 0644)
-		if err != nil {
-			utils.PrintErrorMsg("Failed to export repositories to yaml file.")
-			os.Exit(1)
+		if !skipOutputFile {
+			err := os.WriteFile(filePath, yamlData, 0644)
+			if err != nil {
+				utils.PrintErrorMsg("Failed to export repositories to yaml file.")
+				os.Exit(1)
+			}
 		}
 	},
 }
