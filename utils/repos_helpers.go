@@ -29,11 +29,11 @@ type Config struct {
 func IsReposFileValid(filePath string) error {
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return errors.New("Error: File does not exist!")
+		return errors.New("error: File does not exist")
 	}
 
 	if !strings.HasSuffix(filePath, ".repos") {
-		return errors.New("Error: File given does not have a valid .repos extension!")
+		return errors.New("error: File given does not have a valid .repos extension")
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func ParseReposFile(filePath string) (*Config, error) {
 	yamlFile, err := os.ReadFile(filePath)
 
 	if err != nil {
-		errorMsg := "Failed to read .repos file"
+		errorMsg := "failed to read .repos file"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
@@ -56,13 +56,13 @@ func ParseReposFile(filePath string) (*Config, error) {
 	var config Config
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
-		errorMsg := "Failed to parse .repos file"
+		errorMsg := "failed to parse .repos file"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
 
 	if len(config.Repositories) == 0 {
-		errorMsg := "Empty .repos file given"
+		errorMsg := "empty .repos file given"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
@@ -89,16 +89,16 @@ func FindReposFiles(rootPath string) ([]string, error) {
 // FindDirectory Search for a targetDir given a rootPath
 func FindDirectory(rootPath string, targetDir string) (string, error) {
 	if len(rootPath) == 0 {
-		return "", errors.New("Empty rootPath given")
+		return "", errors.New("empty rootPath given")
 	}
 	if len(targetDir) == 0 {
-		return "", errors.New("Empty targetDir given")
+		return "", errors.New("empty targetDir given")
 	}
 	if rootInfo, err := os.Stat(rootPath); err != nil || !rootInfo.IsDir() {
 		return "", err
 	}
 	if _, err := os.Stat(targetDir); err == nil {
-		return "", errors.New("targetDir is a Path!. Expected just a name.")
+		return "", errors.New("targetDir is a Path!. Expected just a name")
 	}
 
 	var dirPath string

@@ -3,7 +3,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -198,7 +197,7 @@ func GitSwitch(path string, branch string, createBranch bool, detachHead bool) (
 
 	output, err := RunGitCmd(path, "switch", nil, cmdArgs...)
 	if err != nil {
-		switchError := errors.New(fmt.Sprintf("Failed to switch branch of repository %s to %s. Error: %s", path, branch, err))
+		switchError := fmt.Errorf("failed to switch branch of repository %s to %s. Error: %s", path, branch, err)
 		return "", switchError
 	}
 	return output, nil
