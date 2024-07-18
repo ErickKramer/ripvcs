@@ -46,7 +46,7 @@ and that the provided version exist.`,
 				for job := range jobs {
 					if job.Repo.Type != "git" {
 						utils.PrintRepoEntry(job.RepoPath, "")
-						utils.PrintErrorMsg("Unsupported repository type.\n")
+						utils.PrintErrorMsg(fmt.Sprintf("Unsupported repository type %s.\n", job.Repo.Type))
 						results <- false
 					} else {
 						success := utils.PrintCheckGit(job.RepoPath, job.Repo.URL, job.Repo.Version, false)

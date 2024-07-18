@@ -83,7 +83,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 			for job := range jobs {
 				if job.Repo.Type != "git" {
 					utils.PrintRepoEntry(job.RepoPath, "")
-					utils.PrintErrorMsg("Unsupported repository type.\n")
+					utils.PrintErrorMsg(fmt.Sprintf("Unsupported repository type %s.\n", job.Repo.Type))
 					results <- false
 				} else {
 					success := false
