@@ -27,9 +27,43 @@ func TestReposFile(t *testing.T) {
 }
 
 func TestParsingReposFile(t *testing.T) {
-	_, err := utils.ParseReposFile("./valid_example.repos")
+	repo, err := utils.ParseReposFile("./valid_example.repos")
 	if err != nil {
-		t.Errorf("Expected to report a valid file")
+		t.Errorf("Expected to parse .repos file")
+	}
+	if len(repo.Repositories) != 8 {
+		t.Errorf("The parsed repositories from .repos file do not match the expected values.")
+	}
+	expectedType := "git"
+	if repoType := repo.Repositories["demos_rolling"].Type; repoType != expectedType {
+		t.Errorf("Expected to have %s as repo type. Got: %s", expectedType, repoType)
+	}
+	expectedUrl := "https://github.com/ros2/demos.git"
+	if repoUrl := repo.Repositories["demos_rolling"].URL; repoUrl != expectedUrl {
+		t.Errorf("Expected to have %s as repo url. Got: %s", expectedUrl, repoUrl)
+	}
+	expectedVersion := "rolling"
+	if repoVersion := repo.Repositories["demos_rolling"].Version; repoVersion != expectedVersion {
+		t.Errorf("Expected to have %s as repo version. Got: %s", expectedVersion, repoVersion)
+	}
+	repo, err = utils.ParseReposFile("./valid_example.rosinstall")
+	if err != nil {
+		t.Errorf("Expected to parse .rosinstall file")
+	}
+	if len(repo.Repositories) != 2 {
+		t.Errorf("The parsed repositories from .rosinstall do not match the expected values.")
+	}
+	expectedType = "git"
+	if repoType := repo.Repositories["moveit_msgs"].Type; repoType != expectedType {
+		t.Errorf("Expected to have %s as repo type. Got: %s", expectedType, repoType)
+	}
+	expectedUrl = "https://github.com/moveit/moveit_msgs.git"
+	if repoUrl := repo.Repositories["moveit_msgs"].URL; repoUrl != expectedUrl {
+		t.Errorf("Expected to have %s as repo url. Got: %s", expectedUrl, repoUrl)
+	}
+	expectedVersion = "master"
+	if repoVersion := repo.Repositories["moveit_msgs"].Version; repoVersion != expectedVersion {
+		t.Errorf("Expected to have %s as repo version. Got: %s", expectedVersion, repoVersion)
 	}
 
 	err = os.WriteFile("/tmp/empty_file.repos", []byte{}, 0644)
@@ -75,19 +109,19 @@ func TestFindDirectory(t *testing.T) {
 		t.Errorf("Wrong directory found. Expected %v, found %v", path, repoPath)
 	}
 
-	repoPath, err = utils.FindDirectory("", "sadsd")
+	_, err = utils.FindDirectory("", "sadsd")
 	if err == nil {
 		t.Errorf("Expected to failed to find directory, based on empty rootPath")
 	}
-	repoPath, err = utils.FindDirectory("/tmp", "")
+	_, err = utils.FindDirectory("/tmp", "")
 	if err == nil {
 		t.Errorf("Expected to failed to find directory, based on empty targetDir")
 	}
-	repoPath, err = utils.FindDirectory("/sdasd", "")
+	_, err = utils.FindDirectory("/sdasd", "")
 	if err == nil {
 		t.Errorf("Expected to failed to find directory, based on nonexisting rootPath")
 	}
-	repoPath, err = utils.FindDirectory("/tmp", "/tmp/testdata/")
+	_, err = utils.FindDirectory("/tmp", "/tmp/testdata/")
 	if err == nil {
 		t.Errorf("Expected to failed to find directory, targetDir being a path")
 	}
