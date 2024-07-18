@@ -20,9 +20,43 @@ type Repository struct {
 	URL     string `yaml:"url"`
 	Version string `yaml:"version,omitempty"`
 }
+type RepositoryRosinstall struct {
+	LocalName string `yaml:"local-name"`
+	URL       string `yaml:"uri"`
+	Version   string `yaml:"version,omitempty"`
+}
 
 type Config struct {
 	Repositories map[string]Repository `yaml:"repositories"`
+}
+
+func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Try to unmarshal as .repos format
+	type configA Config
+	var a configA
+	if err := unmarshal(&a); err == nil && a.Repositories != nil {
+		*c = Config(a)
+		return nil
+	}
+
+	// Try to unmarshal as .rosinstall format
+	var b []map[string]RepositoryRosinstall
+	if err := unmarshal(&b); err == nil {
+		repositories := make(map[string]Repository)
+		for _, item := range b {
+			for key, repo := range item {
+
+				repositories[repo.LocalName] = Repository{
+					Type:    key,
+					URL:     repo.URL,
+					Version: repo.Version,
+				}
+			}
+		}
+		c.Repositories = repositories
+		return nil
+	}
+	return fmt.Errorf("failed to unmarshal as either .repos or .rosinstall format")
 }
 
 // IsReposFileValid Check if given filePath exists and if has .repos suffix
@@ -32,8 +66,8 @@ func IsReposFileValid(filePath string) error {
 		return errors.New("error: File does not exist")
 	}
 
-	if !strings.HasSuffix(filePath, ".repos") {
-		return errors.New("error: File given does not have a valid .repos extension")
+	if !strings.HasSuffix(filePath, ".repos") && !strings.HasSuffix(filePath, ".rosinstall") {
+		return errors.New("error: File given does not have a valid .repos or .rosinstall extension")
 	}
 	return nil
 }
@@ -47,7 +81,7 @@ func ParseReposFile(filePath string) (*Config, error) {
 	yamlFile, err := os.ReadFile(filePath)
 
 	if err != nil {
-		errorMsg := "failed to read .repos file"
+		errorMsg := "failed to read repos file"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
@@ -56,13 +90,13 @@ func ParseReposFile(filePath string) (*Config, error) {
 	var config Config
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
-		errorMsg := "failed to parse .repos file"
+		errorMsg := "failed to parse repos file"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
 
 	if len(config.Repositories) == 0 {
-		errorMsg := "empty .repos file given"
+		errorMsg := "empty repos file given"
 		// fmt.Printf("%s: %s\n", errorMsg, err)
 		return nil, errors.New(errorMsg)
 	}
@@ -151,8 +185,8 @@ func GetRepoPath(repoName string) string {
 	}
 
 	foundRepoPath, findErr := FindDirectory(".", repoName)
-	if findErr != nil {
-		PrintErrorMsg(fmt.Sprintf("Failed to find directory named %s. Error: %s\n", repoName, findErr))
+	if findErr != nil || foundRepoPath == "" {
+		PrintErrorMsg(fmt.Sprintf("Failed to find directory named %s. Error: %v\n", repoName, findErr))
 		os.Exit(1)
 	}
 	return foundRepoPath
