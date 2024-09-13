@@ -24,16 +24,17 @@ Whether you are managing a few repositories or a complex workspace with numerous
 ### Using pre-built binaries
 
 1. Go to the [Releases](https://github.com/ErickKramer/ripvcs/releases) page.
-2. Download latest binary
-3. Make the binary executable
+1. Download latest binary based on architecture
+1. Rename the downloaded binary file to `rv`
+1. Make the binary executable
    ```console
    chmod +x rv
    ```
-4. Move binary to a directory included in your `PATH`
+1. Move binary to a directory included in your `PATH`
    ```console
    mv rv ~/.local/bin/
    ```
-5. Verify installation
+1. Verify installation
    ```console
    rv help
    ```
