@@ -93,6 +93,7 @@ Usage:
 
 Flags:
   -d, --depth-recursive int   Regulates how many levels the recursive dependencies would be cloned. (default -1)
+  -x, --exclude strings       List of files or directories to exclude
   -f, --force                 Force overwriting existing repositories
   -h, --help                  help for import
   -i, --input .repos          Path to input .repos file
