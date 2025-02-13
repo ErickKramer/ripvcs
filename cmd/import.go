@@ -148,7 +148,11 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 			// Check if the file is in the exclude list
 			exclude := false
 			for _, excludePath := range excludeList {
-				if strings.Contains(filePathToClone, excludePath) {
+				relPath, err := filepath.Rel(cloningPath, filePathToClone)
+				if err != nil {
+					continue
+				}
+				if relPath == excludePath || strings.HasPrefix(relPath, excludePath+string(os.PathSeparator)) {
 					exclude = true
 					break
 				}
