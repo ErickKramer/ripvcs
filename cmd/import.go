@@ -158,6 +158,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 				}
 			}
 			if exclude {
+				utils.PrintRepoEntry(fmt.Sprintf("Excluding %s", filePathToClone), "")
 				continue
 			}
 			
