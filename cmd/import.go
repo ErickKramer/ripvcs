@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"ripvcs/utils"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -37,6 +38,7 @@ import cycle.`,
 		shallowClone, _ := cmd.Flags().GetBool("shallowClone")
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
+		excludeList, _ := cmd.Flags().GetStringSlice("exclude")
 
 		// Import repository files in the given file
 		validFile := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries)
@@ -46,7 +48,7 @@ import cycle.`,
 		if !recursiveFlag {
 			os.Exit(0)
 		}
-		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries)
+		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList)
 
 	},
 }
@@ -61,6 +63,7 @@ func init() {
 	importCmd.Flags().BoolP("force", "f", false, "Force overwriting existing repositories")
 	importCmd.Flags().BoolP("shallow", "l", false, "Clone repositories with a depth of 1")
 	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
+	importCmd.Flags().StringSliceP("exclude", "x", []string{}, "List of files or directories to exclude")
 }
 
 func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int) bool {
@@ -121,7 +124,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	return validFile
 }
 
-func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int) {
+func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string) {
 	// Recursively import .repos files found
 	clonedReposFiles := map[string]bool{initialFilePath: true}
 	validFiles := true
@@ -142,6 +145,25 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 		// Get dependencies to clone
 		newReposFileFound := false
 		for _, filePathToClone := range foundReposFiles {
+			// Check if the file is in the exclude list
+			exclude := false
+			for _, excludePath := range excludeList {
+				cleanExcludePath := filepath.Clean(excludePath)
+				relPath, err := filepath.Rel(cloningPath, filePathToClone)
+				if err != nil {
+					continue
+				}
+				cleanRelPath := filepath.Clean(relPath)
+				if cleanRelPath == cleanExcludePath || strings.HasPrefix(cleanRelPath, cleanExcludePath+string(os.PathSeparator)) {
+				exclude = true
+				break
+			}
+			}
+			if exclude {
+				utils.PrintRepoEntry(fmt.Sprintf("Excluding %s", filePathToClone), "")
+				continue
+			}
+			
 			if _, ok := clonedReposFiles[filePathToClone]; !ok {
 				validFiles = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries)
 				clonedReposFiles[filePathToClone] = true
