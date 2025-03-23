@@ -38,6 +38,9 @@ func createTestFiles() {
 	// Create nested directories and .git repository
 	path = "/tmp/testdata/normal_dir/another_repo/"
 	err = os.MkdirAll(path, 0755)
+	if err != nil {
+		panic(err)
+	}
 	cmd = exec.Command("git", "init")
 	cmd.Dir = path
 	_, err = cmd.CombinedOutput()

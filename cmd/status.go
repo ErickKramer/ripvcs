@@ -36,7 +36,7 @@ If no path is given, it checks the status of any Git repository relative to the 
 		done := make(chan bool)
 
 		// Iterate over the numWorkers
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			go func() {
 				for repo := range jobs {
 					utils.PrintGitStatus(repo, skipEmtpy, plainStatus)
@@ -51,7 +51,7 @@ If no path is given, it checks the status of any Git repository relative to the 
 		close(jobs) // Close channel to signal no more work will be sent
 
 		// wait for all goroutines to finish
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			<-done
 		}
 	},

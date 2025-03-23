@@ -81,7 +81,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	// Create a channel to indicate when the go routines have finished
 	done := make(chan bool)
 
-	for i := 0; i < numWorkers; i++ {
+	for range numWorkers {
 		go func() {
 			for job := range jobs {
 				if job.Repo.Type != "git" {
@@ -90,7 +90,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 					results <- false
 				} else {
 					success := false
-					for i := 0; i < numRetries; i++ {
+					for range numRetries {
 						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.RepoPath, overwriteExisting, shallowClone, false)
 						if success {
 							break
@@ -108,7 +108,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	}
 	close(jobs)
 	// wait for all goroutines to finish
-	for i := 0; i < numWorkers; i++ {
+	for range numWorkers {
 		<-done
 	}
 	close(results)
@@ -155,15 +155,15 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 				}
 				cleanRelPath := filepath.Clean(relPath)
 				if cleanRelPath == cleanExcludePath || strings.HasPrefix(cleanRelPath, cleanExcludePath+string(os.PathSeparator)) {
-				exclude = true
-				break
-			}
+					exclude = true
+					break
+				}
 			}
 			if exclude {
 				utils.PrintRepoEntry(fmt.Sprintf("Excluding %s", filePathToClone), "")
 				continue
 			}
-			
+
 			if _, ok := clonedReposFiles[filePathToClone]; !ok {
 				validFiles = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries)
 				clonedReposFiles[filePathToClone] = true
@@ -179,5 +179,4 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 		}
 		cloneSweepCounter++
 	}
-
 }

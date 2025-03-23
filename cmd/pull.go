@@ -35,7 +35,7 @@ Update all repositories found relative to the given path or to the current path.
 		done := make(chan bool)
 
 		// Iterate over the numWorkers
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			go func() {
 				for repo := range jobs {
 					utils.PrintGitPull(repo)
@@ -50,7 +50,7 @@ Update all repositories found relative to the given path or to the current path.
 		close(jobs) // Close channel to signal no more work will be sent
 
 		// wait for all goroutines to finish
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			<-done
 		}
 	},

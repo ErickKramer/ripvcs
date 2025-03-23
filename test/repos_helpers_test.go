@@ -129,7 +129,6 @@ func TestFindDirectory(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func TestParseRepositoryInfo(t *testing.T) {
@@ -166,5 +165,4 @@ func TestParseRepositoryInfo(t *testing.T) {
 	if repository.Type != "git" || repository.Version != repoVersion || repository.URL != repoURL {
 		t.Errorf("Failed to properly parse the repository info using tag")
 	}
-
 }
