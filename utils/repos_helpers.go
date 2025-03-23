@@ -30,7 +30,7 @@ type Config struct {
 	Repositories map[string]Repository `yaml:"repositories"`
 }
 
-func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *Config) UnmarshalYAML(unmarshal func(any) error) error {
 	// Try to unmarshal as .repos format
 	type configA Config
 	var a configA

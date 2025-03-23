@@ -41,7 +41,7 @@ and that the provided version exist.`,
 		// Create a channel to indicate when the go routines have finished
 		done := make(chan bool)
 
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			go func() {
 				for job := range jobs {
 					if job.Repo.Type != "git" {
@@ -62,7 +62,7 @@ and that the provided version exist.`,
 		}
 		close(jobs)
 		// wait for all goroutines to finish
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			<-done
 		}
 		close(results)

@@ -57,7 +57,7 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		// Initialize the repositories map
 		config.Repositories = make(map[string]utils.Repository)
 		// Iterate over the numWorkers
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			go func() {
 				for repoPath := range jobs {
 					var repoPathName string
@@ -80,7 +80,7 @@ If no path is given, it checks the finds any Git repository relative to the curr
 		close(jobs) // Close channel to signal no more work will be sent
 
 		// wait for all goroutines to finish
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			<-done
 		}
 		close(repositories)

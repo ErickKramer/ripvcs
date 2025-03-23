@@ -36,7 +36,7 @@ and bring back staged changes.`,
 		done := make(chan bool)
 
 		// Iterate over the numWorkers
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			go func() {
 				for repo := range jobs {
 					utils.PrintGitSync(repo)
@@ -51,7 +51,7 @@ and bring back staged changes.`,
 		close(jobs) // Close channel to signal no more work will be sent
 
 		// wait for all goroutines to finish
-		for i := 0; i < numWorkers; i++ {
+		for range numWorkers {
 			<-done
 		}
 	},
