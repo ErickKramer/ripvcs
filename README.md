@@ -1,7 +1,5 @@
 # 🎒 ripvcs
 
-**PRE-RELEASE: Heavily developing this tool at the moment.**
-
 <p align="center">
   <img width="33%" src="./assets/cat_sorter.jpeg" />
 </p>
