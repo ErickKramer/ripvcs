@@ -93,7 +93,7 @@ Usage:
 
 Flags:
   -d, --depth-recursive int   Regulates how many levels the recursive dependencies would be cloned. (default -1)
-  -x, --exclude strings       List of files or directories to exclude
+  -x, --exclude strings       List of files and/or directories to exclude when performing a recursive import
   -f, --force                 Force overwriting existing repositories
   -h, --help                  help for import
   -i, --input .repos          Path to input .repos file
@@ -118,7 +118,17 @@ repositories:
   default_demos:
     type: git
     url: https://github.com/ros2/demos
+    exclude: []
 ```
+
+### Import exclusion
+
+It is possible to exclude files or directories when doing recursive import. This can be done either
+through the use of the `--exclude / -x` flag accompanied by the name of the `.repos` file or a
+directory within the path.
+
+Additionally, it is possible to add a `exclude` attribute to the `.repos` file to hard-code what
+files to exclude during import. An example of this can be seen in [example_nested.repos](./test/example_nested.repos)
 
 ## Related Project
 
