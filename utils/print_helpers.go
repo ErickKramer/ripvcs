@@ -12,7 +12,7 @@ const (
 )
 
 func PrintRepoEntry(path string, msg string) {
-	fmt.Printf("%s=== %s ===%s\n%s\n", BlueColor, path, ResetColor, msg)
+	fmt.Printf("%s=== %s ===%s\n%s", BlueColor, path, ResetColor, msg)
 }
 
 func PrintSection(msg string) {
@@ -20,6 +20,14 @@ func PrintSection(msg string) {
 }
 func PrintSeparator() {
 	fmt.Printf("%s--------------------%s\n", PurpleColor, ResetColor)
+}
+
+func PrintInfoMsg(msg string) {
+	fmt.Printf("%s%s%s", BlueColor, msg, ResetColor)
+}
+
+func PrintWarnMsg(msg string) {
+	fmt.Printf("%s%s%s", OrangeColor, msg, ResetColor)
 }
 
 func PrintErrorMsg(msg string) {
