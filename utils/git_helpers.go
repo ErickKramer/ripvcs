@@ -21,7 +21,6 @@ const (
 
 // IsGitRepository checks if a directory is a git repository
 func IsGitRepository(dir string) bool {
-	// FIXME: Check if dir is a directory
 	gitDir := filepath.Join(dir, ".git")
 	_, err := os.Stat(gitDir)
 	return err == nil
@@ -42,7 +41,7 @@ func FindGitRepositories(root string) []string {
 		return nil // Continue walking
 	})
 	if err != nil {
-		fmt.Println("Error: ", err)
+		PrintErrorMsg(fmt.Sprintf("Error: %s", err))
 	}
 	return gitRepos
 }
@@ -69,7 +68,7 @@ func GetGitStatus(path string, plainStatus bool) string {
 	}
 	output, err := RunGitCmd(path, "status", nil, statusArgs...)
 	if err != nil {
-		fmt.Printf("Failed to check Git status of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to check Git status of %s. Error: %s", path, err))
 	}
 	return output
 }
@@ -78,7 +77,7 @@ func GetGitStatus(path string, plainStatus bool) string {
 func GetGitBranch(path string) string {
 	output, err := RunGitCmd(path, "branch", nil, "--show-current")
 	if err != nil {
-		fmt.Printf("Failed to get current Git branch of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to get current Git branch of %s. Error: %s", path, err))
 	}
 	if output != "" {
 		return strings.TrimSpace(output)
@@ -86,7 +85,7 @@ func GetGitBranch(path string) string {
 	checkTagArgs := []string{"--points-at", "HEAD"}
 	output, err = RunGitCmd(path, "tag", nil, checkTagArgs...)
 	if err != nil {
-		fmt.Printf("Failed to get current Git branch of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to get current Git branch of %s. Error: %s", path, err))
 	}
 	return strings.TrimSpace(output)
 }
@@ -95,7 +94,7 @@ func GetGitCommitSha(path string) string {
 	cmdArgs := []string{"--verify", "HEAD"}
 	output, err := RunGitCmd(path, "rev-parse", nil, cmdArgs...)
 	if err != nil {
-		fmt.Printf("Failed to get current Git commit of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to get current Git commit of %s. Error: %s", path, err))
 	}
 	return strings.TrimSpace(output)
 }
@@ -104,7 +103,7 @@ func GetGitRemoteURL(path string) string {
 	cmdArgs := []string{"get-url", "origin"}
 	output, err := RunGitCmd(path, "remote", nil, cmdArgs...)
 	if err != nil {
-		fmt.Printf("Failed to get URL for the origin remote of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to get URL for the origin remote of %s. Error: %s", path, err))
 	}
 	return strings.TrimSpace(output)
 }
@@ -113,7 +112,7 @@ func GetGitRemoteURL(path string) string {
 func PullGitRepo(path string) string {
 	output, err := RunGitCmd(path, "pull", nil)
 	if err != nil {
-		fmt.Printf("Failed to pull Git repository %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to pull Git repository %s. Error: %s", path, err))
 	}
 	return output
 }
@@ -122,7 +121,7 @@ func PullGitRepo(path string) string {
 func StashGitRepo(path string, stashCmd string) string {
 	output, err := RunGitCmd(path, "stash", nil, []string{stashCmd}...)
 	if err != nil {
-		fmt.Printf("Failed to run stash with %s Git repository %s. Error: %s", stashCmd, path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to run stash with %s Git repository %s. Error: %s", stashCmd, path, err))
 	}
 	return output
 }
@@ -178,7 +177,7 @@ func GetGitLog(path string, oneline bool, numCommits int) string {
 
 	output, err := RunGitCmd(path, "log", nil, cmdArgs...)
 	if err != nil {
-		fmt.Printf("Failed to check Git log of %s. Error: %s", path, err)
+		PrintErrorMsg(fmt.Sprintf("Failed to check Git log of %s. Error: %s", path, err))
 	}
 	return output
 }
@@ -220,7 +219,7 @@ func GitClone(url string, version string, clonePath string, overwriteExisting bo
 		} else {
 			// Remove existing clonePath
 			if err := os.RemoveAll(clonePath); err != nil {
-				fmt.Printf("Failed to remove existing cloning path %s. Error: %s\n", clonePath, err)
+				PrintErrorMsg(fmt.Sprintf("Failed to remove existing cloning path %s. Error: %s\n", clonePath, err))
 				panic(err)
 			}
 		}
