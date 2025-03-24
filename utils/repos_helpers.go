@@ -19,11 +19,13 @@ type Repository struct {
 	Type    string `yaml:"type"`
 	URL     string `yaml:"url"`
 	Version string `yaml:"version,omitempty"`
+	Exclude []string `yaml:"exclude,omitempty"`
 }
 type RepositoryRosinstall struct {
 	LocalName string `yaml:"local-name"`
 	URL       string `yaml:"uri"`
 	Version   string `yaml:"version,omitempty"`
+	Exclude []string `yaml:"exclude,omitempty"`
 }
 
 type Config struct {
@@ -50,6 +52,7 @@ func (c *Config) UnmarshalYAML(unmarshal func(any) error) error {
 					Type:    key,
 					URL:     repo.URL,
 					Version: repo.Version,
+					Exclude: repo.Exclude,
 				}
 			}
 		}

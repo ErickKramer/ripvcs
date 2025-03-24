@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"ripvcs/utils"
 	"strings"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -40,14 +41,17 @@ import cycle.`,
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		excludeList, _ := cmd.Flags().GetStringSlice("exclude")
 
+		var hardCodedExcludeList = []string{}
+
 		// Import repository files in the given file
-		validFile := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries)
+		validFile, hardCodedExcludeList := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries)
 		if !validFile {
 			os.Exit(1)
 		}
 		if !recursiveFlag {
 			os.Exit(0)
 		}
+		excludeList = append(excludeList, hardCodedExcludeList...)
 		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList)
 
 	},
@@ -63,16 +67,20 @@ func init() {
 	importCmd.Flags().BoolP("force", "f", false, "Force overwriting existing repositories")
 	importCmd.Flags().BoolP("shallow", "l", false, "Clone repositories with a depth of 1")
 	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
-	importCmd.Flags().StringSliceP("exclude", "x", []string{}, "List of files or directories to exclude")
+	importCmd.Flags().StringSliceP("exclude", "x", []string{}, "List of files and/or directories to exclude when performing a recursive import")
 }
 
-func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int) bool {
+func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int) (bool, []string) {
+	utils.PrintSeparator()
 	utils.PrintSection(fmt.Sprintf("Importing from %s", filePath))
 	utils.PrintSeparator()
 	config, err := utils.ParseReposFile(filePath)
+
+	var allExcludes []string
+
 	if err != nil {
-		fmt.Printf("Invalid file given {%s}. %s\n", filePath, err)
-		return false
+		utils.PrintErrorMsg(fmt.Sprintf("Invalid file given {%s}. %s\n", filePath, err))
+		return false, allExcludes
 	}
 	// Create a channel to send work to the workers with a buffer size of length gitRepos
 	jobs := make(chan utils.RepositoryJob, len(config.Repositories))
@@ -80,6 +88,9 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	results := make(chan bool, len(config.Repositories))
 	// Create a channel to indicate when the go routines have finished
 	done := make(chan bool)
+
+	// Create mutex to handle excludeFilesChannel
+	var excludeFilesMutex sync.Mutex
 
 	for range numWorkers {
 		go func() {
@@ -97,6 +108,12 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 						}
 					}
 					results <- success
+					// Expand excludeFilesChannel
+					if len(job.Repo.Exclude) > 0 {
+						excludeFilesMutex.Lock()
+						allExcludes = append(allExcludes, job.Repo.Exclude...)
+						excludeFilesMutex.Unlock()
+					}
 				}
 			}
 			done <- true
@@ -117,11 +134,12 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	for result := range results {
 		if !result {
 			validFile = false
-			fmt.Printf("Failed while cloning %s\n", filePath)
+			utils.PrintErrorMsg(fmt.Sprintf("Failed while cloning %s\n", filePath))
 			break
 		}
 	}
-	return validFile
+
+	return validFile, allExcludes
 }
 
 func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string) {
@@ -129,6 +147,8 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 	clonedReposFiles := map[string]bool{initialFilePath: true}
 	validFiles := true
 	cloneSweepCounter := 0
+
+	numPreviousFoundReposFiles := 0
 
 	for {
 		// Check if recursion level has been reached
@@ -142,36 +162,53 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 			break
 		}
 
+		if len(foundReposFiles) == numPreviousFoundReposFiles {
+			break
+		}
+		numPreviousFoundReposFiles = len(foundReposFiles)
+
 		// Get dependencies to clone
 		newReposFileFound := false
+		var hardCodedExcludeList = []string{}
+
+		// FIXME: Find a simpler logic for this
 		for _, filePathToClone := range foundReposFiles {
 			// Check if the file is in the exclude list
 			exclude := false
+
+			// Initialize filePathToClone options
+			filePathBase := filepath.Base(filePathToClone)
+			filePathDir := filepath.Dir(filePathToClone)
+			filePathParentDir := filepath.Base(filePathDir)
+
 			for _, excludePath := range excludeList {
-				cleanExcludePath := filepath.Clean(excludePath)
-				relPath, err := filepath.Rel(cloningPath, filePathToClone)
-				if err != nil {
-					continue
-				}
-				cleanRelPath := filepath.Clean(relPath)
-				if cleanRelPath == cleanExcludePath || strings.HasPrefix(cleanRelPath, cleanExcludePath+string(os.PathSeparator)) {
+				excludeBase := filepath.Base(excludePath)
+
+				// Check if exclude matches either:
+				// 1. The full relative path
+				// 2. The filename
+				// 3. The parent directory
+				if filePathBase == excludeBase || filePathParentDir == excludeBase || strings.HasPrefix(filePathToClone, excludePath) {
 					exclude = true
 					break
 				}
 			}
-			if exclude {
-				utils.PrintRepoEntry(fmt.Sprintf("Excluding %s", filePathToClone), "")
-				continue
-			}
 
 			if _, ok := clonedReposFiles[filePathToClone]; !ok {
-				validFiles = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries)
+				if exclude {
+					utils.PrintSeparator()
+					utils.PrintWarnMsg(fmt.Sprintf("Excluded cloning from '%s'\n", filePathToClone))
+					clonedReposFiles[filePathToClone] = false
+					continue
+				}
+				validFiles, hardCodedExcludeList = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries)
 				clonedReposFiles[filePathToClone] = true
 				newReposFileFound = true
 				if !validFiles {
 					utils.PrintErrorMsg("Encountered errors while importing file")
 					os.Exit(1)
 				}
+				excludeList = append(excludeList, hardCodedExcludeList...)
 			}
 		}
 		if !newReposFileFound {

@@ -3,4 +3,14 @@ repositories:
     type: git
     url: https://github.com/ros-naoqi/naoqi_driver2
     version: main
+  twist_mux:
+    type: git
+    url: https://github.com/ros-teleop/twist_mux.git
+    version: humble
+    exclude: [twist_mux_deps.repos]
+  twist_mux_2/stuff:
+    type: git
+    url: https://github.com/ros-teleop/twist_mux.git
+    version: humble
+    exclude: [stuff]
 
