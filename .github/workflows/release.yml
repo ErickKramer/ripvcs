@@ -1,10 +1,17 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        type: choice
+        required: true
+        default: 'patch'
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
   test:
@@ -13,12 +20,83 @@ jobs:
       - name: Checkout the project
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           fetch-depth: 0
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.x'
+
+      - name: Get Latest Tag
+        run: |
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v0.0.0")
+
+          if ! [[ $latest_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag format is invalid. Expected format: vX.X.X"
+            exit 1
+          fi
+
+          echo "Latest tag: $latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+
+      - name: Check for changes since last release
+        run: |
+          if [ -z "$(git diff --name-only ${{ env.latest_tag }})" ]; then
+            echo "No changes detected since last release"
+            exit 1
+          fi
+
+      - name: Calculate next version
+        run: |
+          echo "Latest tag: ${{ env.latest_tag }}"
+          IFS='.' read -r major minor patch <<< "${{ env.latest_tag }}"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ inputs.version_bump }}" == "major" ]]; then
+              major=$((major + 1))
+              minor=0
+              patch=0
+            elif [[ "${{ inputs.version_bump }}" == "minor" ]]; then
+              minor=$((minor + 1))
+              patch=0
+            else
+              patch=$((patch + 1))
+            fi
+          fi
+
+          new_tag="$major.$minor.$patch"
+
+          if ! [[ $new_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: New tag's format is invalid. Expected format: vX.X.X"
+            exit 1
+          fi
+          echo "New tag: $new_tag"
+
+      - name: Update version.go
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)  # Get the latest tag
+          COMMIT=$(git rev-parse --short HEAD)
+          DATE=$(date +'%d.%m.%Y')
+          sed -i "s/Version   = \".*\"/Version   = \"$VERSION\"/" ./cmd/version.go
+          sed -i "s/Commit    = \".*\"/Commit    = \"$COMMIT\"/" ./cmd/version.go
+          sed -i "s/BuildDate = \".*\"/BuildDate = \"$DATE\"/" ./cmd/version.go
+
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Update version.go for release $VERSION"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+
+      - name: Create and Push Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ env.new_tag }}
+          git push origin ${{ env.new_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -26,4 +104,4 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_API_TOKEN }}
