@@ -21,21 +21,14 @@ Whether you are managing a few repositories or a complex workspace with numerous
 
 ### Using pre-built binaries
 
-1. Go to the [Releases](https://github.com/ErickKramer/ripvcs/releases) page.
-1. Download latest binary based on architecture
-1. Rename the downloaded binary file to `rv`
-1. Make the binary executable
-   ```console
-   chmod +x rv
-   ```
-1. Move binary to a directory included in your `PATH`
-   ```console
-   mv rv ~/.local/bin/
-   ```
-1. Verify installation
-   ```console
-   rv help
-   ```
+- Latest release <https://github.com/ErickKramer/ripvcs/releases/latest>
+
+```console
+RIPVCS_VERSION=$(curl -s "https://api.github.com/repos/ErickKramer/ripvcs/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
+ARCHITECTURE="linux_amd64"
+curl -Lo ~/.local/bin/rv "https://github.com/ErickKramer/ripvcs/releases/download/v${RIPVCS_VERSION}/ripvcs_${RIPVCS_VERSION}_${ARCHITECTURE}"
+chmod +x ~/.local/bin/rv
+```
 
 ## Build from source
 
@@ -48,8 +41,11 @@ Whether you are managing a few repositories or a complex workspace with numerous
    ```console
    go build -o rv main.go
    ```
-3. Follow steps 3-5 from the "Using pre-built binaries" section.
-
+3. Move rv to path
+   ```console
+   mv rv ~/.local/bin/rv
+   chmod +x ~/.local/bin/rv
+   ```
 ## Usage
 
 To check the available commands in _rv_ simply run `rv help`:
