@@ -76,6 +76,7 @@ jobs:
           VERSION=$(git describe --tags --abbrev=0)  # Get the latest tag
           COMMIT=$(git rev-parse --short HEAD)
           DATE=$(date +'%d.%m.%Y')
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
           sed -i "s/Version   = \".*\"/Version   = \"$VERSION\"/" ./cmd/version.go
           sed -i "s/Commit    = \".*\"/Commit    = \"$COMMIT\"/" ./cmd/version.go
           sed -i "s/BuildDate = \".*\"/BuildDate = \"$DATE\"/" ./cmd/version.go
@@ -84,7 +85,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "Update version.go for release $VERSION"
-          git push
+          git push origin $BRANCH
         env:
           GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
 
