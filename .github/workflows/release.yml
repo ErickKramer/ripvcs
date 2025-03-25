@@ -70,10 +70,11 @@ jobs:
             exit 1
           fi
           echo "New tag: $new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
 
       - name: Update version.go
         run: |
-          VERSION=$(git describe --tags --abbrev=0)  # Get the latest tag
+          VERSION="${{ env.new_tag }}"
           COMMIT=$(git rev-parse --short HEAD)
           DATE=$(date +'%d.%m.%Y')
           BRANCH=$(git rev-parse --abbrev-ref HEAD)
