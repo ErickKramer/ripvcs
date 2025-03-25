@@ -13,8 +13,8 @@ import (
 var (
 	// These variables should be set using ldflags during the build
 	Version   = "v0.1.3"
-	Commit    = "c552406"
-	BuildDate = "02.07.2024"
+	Commit    = "3ddedda"
+	BuildDate = "25.03.2025"
 )
 
 // versionCmd represents the version command
