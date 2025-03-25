@@ -14,7 +14,7 @@ on:
           - patch
 
 jobs:
-  test:
+  bump-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the project
