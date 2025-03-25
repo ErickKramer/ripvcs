@@ -63,7 +63,7 @@ jobs:
             fi
           fi
 
-          new_tag="$major.$minor.$patch"
+          new_tag="v$major.$minor.$patch"
 
           if ! [[ $new_tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Error: New tag's format is invalid ${new_tag}. Expected format: vX.X.X"
