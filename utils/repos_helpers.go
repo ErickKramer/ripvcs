@@ -16,16 +16,16 @@ type RepositoryJob struct {
 }
 
 type Repository struct {
-	Type    string `yaml:"type"`
-	URL     string `yaml:"url"`
-	Version string `yaml:"version,omitempty"`
+	Type    string   `yaml:"type"`
+	URL     string   `yaml:"url"`
+	Version string   `yaml:"version,omitempty"`
 	Exclude []string `yaml:"exclude,omitempty"`
 }
 type RepositoryRosinstall struct {
-	LocalName string `yaml:"local-name"`
-	URL       string `yaml:"uri"`
-	Version   string `yaml:"version,omitempty"`
-	Exclude []string `yaml:"exclude,omitempty"`
+	LocalName string   `yaml:"local-name"`
+	URL       string   `yaml:"uri"`
+	Version   string   `yaml:"version,omitempty"`
+	Exclude   []string `yaml:"exclude,omitempty"`
 }
 
 type Config struct {
