@@ -40,11 +40,12 @@ import cycle.`,
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		excludeList, _ := cmd.Flags().GetStringSlice("exclude")
+		recurseSubmodules, _ := cmd.Flags().GetBool("recurse-submodules")
 
 		var hardCodedExcludeList = []string{}
 
 		// Import repository files in the given file
-		validFile, hardCodedExcludeList := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries)
+		validFile, hardCodedExcludeList := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
 		if !validFile {
 			os.Exit(1)
 		}
@@ -52,7 +53,7 @@ import cycle.`,
 			os.Exit(0)
 		}
 		excludeList = append(excludeList, hardCodedExcludeList...)
-		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList)
+		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList, recurseSubmodules)
 
 	},
 }
@@ -68,9 +69,10 @@ func init() {
 	importCmd.Flags().BoolP("shallow", "l", false, "Clone repositories with a depth of 1")
 	importCmd.Flags().IntP("workers", "w", 8, "Number of concurrent workers to use")
 	importCmd.Flags().StringSliceP("exclude", "x", []string{}, "List of files and/or directories to exclude when performing a recursive import")
+	importCmd.Flags().BoolP("recurse-submodules", "s", false, "Recursively clone submodules")
 }
 
-func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int) (bool, []string) {
+func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, recurseSubmodules bool) (bool, []string) {
 	utils.PrintSeparator()
 	utils.PrintSection(fmt.Sprintf("Importing from %s", filePath))
 	utils.PrintSeparator()
@@ -102,7 +104,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 				} else {
 					success := false
 					for range numRetries {
-						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.RepoPath, overwriteExisting, shallowClone, false)
+						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.RepoPath, overwriteExisting, shallowClone, false, recurseSubmodules)
 						if success {
 							break
 						}
@@ -142,7 +144,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 	return validFile, allExcludes
 }
 
-func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string) {
+func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string, recurseSubmodules bool) {
 	// Recursively import .repos files found
 	clonedReposFiles := map[string]bool{initialFilePath: true}
 	validFiles := true
@@ -201,7 +203,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 					clonedReposFiles[filePathToClone] = false
 					continue
 				}
-				validFiles, hardCodedExcludeList = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries)
+				validFiles, hardCodedExcludeList = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
 				clonedReposFiles[filePathToClone] = true
 				newReposFileFound = true
 				if !validFiles {

@@ -210,7 +210,7 @@ func IsValidSha(sha string) bool {
 }
 
 // GitClone Clone a given repository URL
-func GitClone(url string, version string, clonePath string, overwriteExisting bool, shallowClone bool, enablePrompt bool) int {
+func GitClone(url string, version string, clonePath string, overwriteExisting bool, shallowClone bool, enablePrompt bool, recurseSubmodules bool) int {
 
 	// Check if clonePath exists
 	if _, err := os.Stat(clonePath); err == nil {
@@ -243,6 +243,12 @@ func GitClone(url string, version string, clonePath string, overwriteExisting bo
 
 	if shallowClone {
 		cmdArgs = append(cmdArgs, "--depth", "1")
+	}
+	if recurseSubmodules {
+		cmdArgs = append(cmdArgs, "--recurse-submodules")
+		if shallowClone {
+			cmdArgs = append(cmdArgs, "--shallow-submodules")
+		}
 	}
 	if _, err := RunGitCmd(".", "clone", envConfig, cmdArgs...); err != nil {
 		return FailedClone
@@ -308,10 +314,10 @@ func PrintCheckGit(path string, url string, version string, enablePrompt bool) b
 }
 
 // PrintGitClone Pretty print git clone
-func PrintGitClone(url string, version string, path string, overwriteExisting bool, shallowClone bool, enablePrompt bool) bool {
+func PrintGitClone(url string, version string, path string, overwriteExisting bool, shallowClone bool, enablePrompt bool, recurseSubmodules bool) bool {
 	var cloneMsg string
 	var cloneSuccessful bool
-	statusClone := GitClone(url, version, path, overwriteExisting, shallowClone, enablePrompt)
+	statusClone := GitClone(url, version, path, overwriteExisting, shallowClone, enablePrompt, recurseSubmodules)
 	switch statusClone {
 	case SuccessfullClone:
 		cloneMsg = fmt.Sprintf("Successfully cloned git repository '%s' with version '%s'\n", url, version)
