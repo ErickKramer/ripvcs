@@ -203,10 +203,10 @@ func TestCloneGitRepo(t *testing.T) {
 	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, true, true, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with shallow enabled")
 	}
-	if utils.GitCLone("https://github.com/cyberbotics/webots_ros2.git", "", repoPath, false, false, false, true) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/cyberbotics/webots_ros2.git", "", repoPath, false, false, false, true) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with submodules")
 	}
-	if utils.GitCLone("https://github.com/cyberbotics/webots_ros2.git", "", repoPath, false, true, false, true) != utils.SuccessfullClone {
+	if utils.GitClone("https://github.com/cyberbotics/webots_ros2.git", "", repoPath, false, true, false, true) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with submodules and shallow enabled")
 	}
 	count, err := utils.RunGitCmd(repoPath, "rev-list", nil, []string{"--all", "--count"}...)
