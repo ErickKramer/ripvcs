@@ -139,7 +139,7 @@ func TestParseRepositoryInfo(t *testing.T) {
 	repoPath := "/tmp/testdata/demos_parse"
 	repoURL := "https://github.com/ros2/demos.git"
 	repoVersion := "rolling"
-	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 
@@ -149,7 +149,7 @@ func TestParseRepositoryInfo(t *testing.T) {
 	}
 
 	repoVersion = "839b622bc40ec62307d6ba0615adb9b8bd1cbc30"
-	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	repository = utils.ParseRepositoryInfo(repoPath, true)
@@ -158,7 +158,7 @@ func TestParseRepositoryInfo(t *testing.T) {
 	}
 
 	repoVersion = "0.34.0"
-	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false) != utils.SuccessfullClone {
+	if utils.GitClone(repoURL, repoVersion, repoPath, true, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully clone git repository")
 	}
 	repository = utils.ParseRepositoryInfo(repoPath, false)

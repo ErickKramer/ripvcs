@@ -91,6 +91,7 @@ Flags:
   -f, --force                 Force overwriting existing repositories
   -h, --help                  help for import
   -i, --input .repos          Path to input .repos file
+  -s, --recurse-submodules    Recursively clone submodules
   -r, --recursive .repos      Recursively search of other .repos file in the cloned repositories
   -n, --retry int             Number of attempts to import repositories (default 2)
   -l, --shallow               Clone repositories with a depth of 1
