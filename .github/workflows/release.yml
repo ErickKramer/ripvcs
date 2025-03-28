@@ -48,7 +48,12 @@ jobs:
       - name: Calculate next version
         run: |
           echo "Latest tag: ${{ env.latest_tag }}"
-          IFS='.' read -r major minor patch <<< "${{ env.latest_tag }}"
+
+          # Remove any existing 'v' prefix
+          clean_tag="${{ env.latest_tag }}"
+          clean_tag="${clean_tag#v}"
+
+          IFS='.' read -r major minor patch <<< "$clean_tag"
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             if [[ "${{ inputs.version_bump }}" == "major" ]]; then
