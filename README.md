@@ -123,7 +123,7 @@ through the use of the `--exclude / -x` flag accompanied by the name of the `.re
 directory within the path.
 
 Additionally, it is possible to add a `exclude` attribute to the `.repos` file to hard-code what
-files to exclude during import. An example of this can be seen in [example_nested.repos](./test/example_nested.repos)
+files to exclude during import. An example of this can be seen in [nested_example.repos](./test/nested_example.repos)
 
 ## Related Project
 
