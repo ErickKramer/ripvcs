@@ -194,11 +194,14 @@ func TestCloneGitRepo(t *testing.T) {
 	if utils.GitClone("https://github.com/ros2/sadasdasd.git", "", "/tmp/testdata/sdasda", false, false, false, false) != utils.FailedClone {
 		t.Errorf("Expected to fail to clone git repository")
 	}
-	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, false, false, false, false) != utils.SkippedClone {
+	if utils.GitClone("https://github.com/ros2/demos.git", "rolling", repoPath, false, false, false, false) != utils.SkippedClone {
 		t.Errorf("Expected to skip to clone git repository")
 	}
 	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, true, false, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to overwrite found git repository")
+	}
+	if utils.GitClone("https://github.com/ros2/demos.git", "jazzy", repoPath, false, false, false, false) != utils.SwitchedBranch {
+		t.Errorf("Expected to successfully to switch to a branch")
 	}
 	if utils.GitClone("https://github.com/ros2/demos.git", "", repoPath, true, true, false, false) != utils.SuccessfullClone {
 		t.Errorf("Expected to successfully to clone git repository with shallow enabled")
