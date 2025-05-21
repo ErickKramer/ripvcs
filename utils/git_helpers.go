@@ -17,6 +17,7 @@ const (
 	SuccessfullClone = iota
 	SkippedClone
 	FailedClone
+	SwitchedBranch
 )
 
 // IsGitRepository checks if a directory is a git repository
@@ -213,9 +214,10 @@ func IsValidSha(sha string) bool {
 func GitClone(url string, version string, clonePath string, overwriteExisting bool, shallowClone bool, enablePrompt bool, recurseSubmodules bool) int {
 
 	// Check if clonePath exists
+	var skip_clone bool = false
 	if _, err := os.Stat(clonePath); err == nil {
 		if !overwriteExisting {
-			return SkippedClone
+			skip_clone = true
 		} else {
 			// Remove existing clonePath
 			if err := os.RemoveAll(clonePath); err != nil {
@@ -250,14 +252,28 @@ func GitClone(url string, version string, clonePath string, overwriteExisting bo
 			cmdArgs = append(cmdArgs, "--shallow-submodules")
 		}
 	}
-	if _, err := RunGitCmd(".", "clone", envConfig, cmdArgs...); err != nil {
-		return FailedClone
+	if !skip_clone {
+		if _, err := RunGitCmd(".", "clone", envConfig, cmdArgs...); err != nil {
+			return FailedClone
+		}
+	}
+
+	if skip_clone && (GetGitCommitSha(clonePath) == version || GetGitBranch(clonePath) == version) {
+		return SkippedClone
 	}
 
 	if versionIsSha {
 		if _, err := GitSwitch(clonePath, version, false, true); err != nil {
 			return FailedClone
 		}
+		if skip_clone {
+			return SwitchedBranch
+		}
+	} else if skip_clone {
+		if _, err := GitSwitch(clonePath, version, false, false); err != nil {
+			return FailedClone
+		}
+		return SwitchedBranch
 	}
 
 	return SuccessfullClone
@@ -328,6 +344,9 @@ func PrintGitClone(url string, version string, path string, overwriteExisting bo
 	case FailedClone:
 		cloneMsg = fmt.Sprintf("%sFailed to clone git repository '%s' with version '%s'%s\n", RedColor, url, version, ResetColor)
 		cloneSuccessful = false
+	case SwitchedBranch:
+		cloneMsg = fmt.Sprintf("Successfully switched to version '%s' in existing git repository '%s'\n", version, url)
+		cloneSuccessful = true
 	default:
 		panic("Unexpected behavior!")
 	}
