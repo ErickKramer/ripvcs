@@ -110,31 +110,30 @@ func ParseReposFile(filePath string) (*Config, error) {
 // FindReposFiles Search .repos files in a given path
 func FindReposFiles(rootPath string, clonedPaths []string) ([]string, error) {
 	var foundReposFiles []string
-	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// If clonedPaths is not empty, only consider files under those directories
-		if len(clonedPaths) > 0 {
-			matched := false
-			for _, clonedPath := range clonedPaths {
-				absClonedPath, _ := filepath.Abs(clonedPath)
-				absPath, _ := filepath.Abs(path)
-				rel, relErr := filepath.Rel(absClonedPath, absPath)
-				if relErr == nil && (rel == "." || !strings.HasPrefix(rel, "..")) {
-					matched = true
-					break
+	var err error
+	if len(clonedPaths) == 0 {
+		err = filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && (filepath.Ext(path) == ".repos") {
+				foundReposFiles = append(foundReposFiles, path)
+			}
+			return nil
+		})
+	} else {
+		for _, clonedPath := range clonedPaths {
+			err = filepath.Walk(clonedPath, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
 				}
-			}
-			if !matched {
+				if !info.IsDir() && (filepath.Ext(path) == ".repos") {
+					foundReposFiles = append(foundReposFiles, path)
+				}
 				return nil
-			}
+			})
 		}
-		if !info.IsDir() && (filepath.Ext(path) == ".repos") {
-			foundReposFiles = append(foundReposFiles, path)
-		}
-		return nil
-	})
+	}
 
 	return foundReposFiles, err
 }
