@@ -43,9 +43,10 @@ import cycle.`,
 		recurseSubmodules, _ := cmd.Flags().GetBool("recurse-submodules")
 
 		var hardCodedExcludeList = []string{}
+		var clonedPaths []string
 
 		// Import repository files in the given file
-		validFile, hardCodedExcludeList := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
+		validFile, hardCodedExcludeList, clonedPaths := singleCloneSweep(cloningPath, filePath, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
 		if !validFile {
 			os.Exit(1)
 		}
@@ -53,7 +54,7 @@ import cycle.`,
 			os.Exit(0)
 		}
 		excludeList = append(excludeList, hardCodedExcludeList...)
-		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList, recurseSubmodules)
+		nestedImportClones(cloningPath, filePath, depthRecursive, numWorkers, overwriteExisting, shallowClone, numRetries, excludeList, recurseSubmodules, clonedPaths)
 
 	},
 }
@@ -72,17 +73,18 @@ func init() {
 	importCmd.Flags().BoolP("recurse-submodules", "s", false, "Recursively clone submodules")
 }
 
-func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, recurseSubmodules bool) (bool, []string) {
+func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, recurseSubmodules bool) (bool, []string, []string) {
 	utils.PrintSeparator()
 	utils.PrintSection(fmt.Sprintf("Importing from %s", filePath))
 	utils.PrintSeparator()
 	config, err := utils.ParseReposFile(filePath)
 
 	var allExcludes []string
+	var clonedPaths []string
 
 	if err != nil {
 		utils.PrintErrorMsg(fmt.Sprintf("Invalid file given {%s}. %s\n", filePath, err))
-		return false, allExcludes
+		return false, allExcludes, clonedPaths
 	}
 	// Create a channel to send work to the workers with a buffer size of length gitRepos
 	jobs := make(chan utils.RepositoryJob, len(config.Repositories))
@@ -106,6 +108,7 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 					for range numRetries {
 						success = utils.PrintGitClone(job.Repo.URL, job.Repo.Version, job.RepoPath, overwriteExisting, shallowClone, false, recurseSubmodules)
 						if success {
+							clonedPaths = append(clonedPaths, job.RepoPath)
 							break
 						}
 					}
@@ -141,10 +144,10 @@ func singleCloneSweep(root string, filePath string, numWorkers int, overwriteExi
 		}
 	}
 
-	return validFile, allExcludes
+	return validFile, allExcludes, clonedPaths
 }
 
-func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string, recurseSubmodules bool) {
+func nestedImportClones(cloningPath string, initialFilePath string, depthRecursive int, numWorkers int, overwriteExisting bool, shallowClone bool, numRetries int, excludeList []string, recurseSubmodules bool, clonedPaths []string) {
 	// Recursively import .repos files found
 	clonedReposFiles := map[string]bool{initialFilePath: true}
 	validFiles := true
@@ -159,7 +162,7 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 		}
 
 		// Find .repos file to clone
-		foundReposFiles, err := utils.FindReposFiles(cloningPath)
+		foundReposFiles, err := utils.FindReposFiles(cloningPath, clonedPaths)
 		if err != nil || len(foundReposFiles) == 0 {
 			break
 		}
@@ -203,9 +206,11 @@ func nestedImportClones(cloningPath string, initialFilePath string, depthRecursi
 					clonedReposFiles[filePathToClone] = false
 					continue
 				}
-				validFiles, hardCodedExcludeList = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
+				var newClonedPaths []string
+				validFiles, hardCodedExcludeList, newClonedPaths = singleCloneSweep(cloningPath, filePathToClone, numWorkers, overwriteExisting, shallowClone, numRetries, recurseSubmodules)
 				clonedReposFiles[filePathToClone] = true
 				newReposFileFound = true
+				clonedPaths = append(clonedPaths, newClonedPaths...)
 				if !validFiles {
 					utils.PrintErrorMsg("Encountered errors while importing file")
 					os.Exit(1)

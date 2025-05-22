@@ -81,15 +81,20 @@ func TestParsingReposFile(t *testing.T) {
 }
 
 func TestFindingReposFiles(t *testing.T) {
-	foundReposFiles, err := utils.FindReposFiles(".")
+	foundReposFiles, err := utils.FindReposFiles(".", nil)
 
 	if err != nil || len(foundReposFiles) == 0 {
 		t.Errorf("Expected to find at least one .repos file %v", err)
 	}
-	foundReposFiles, err = utils.FindReposFiles("../cmd/")
+	foundReposFiles, err = utils.FindReposFiles("../cmd/", nil)
 
 	if err != nil || len(foundReposFiles) != 0 {
 		t.Errorf("Expected to not find any .repos file %v", err)
+	}
+
+	foundReposFiles, err = utils.FindReposFiles(".", []string{"../test"})
+	if err != nil || len(foundReposFiles) == 0 {
+		t.Errorf("Expected to find at least one .repos file %v", err)
 	}
 }
 
