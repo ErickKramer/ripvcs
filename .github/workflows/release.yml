@@ -112,3 +112,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+          CGO_ENABLED: 0
