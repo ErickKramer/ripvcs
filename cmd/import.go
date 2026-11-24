@@ -36,7 +36,7 @@ import cycle.`,
 		recursiveFlag, _ := cmd.Flags().GetBool("recursive")
 		numRetries, _ := cmd.Flags().GetInt("retry")
 		overwriteExisting, _ := cmd.Flags().GetBool("force")
-		shallowClone, _ := cmd.Flags().GetBool("shallowClone")
+		shallowClone, _ := cmd.Flags().GetBool("shallow")
 		depthRecursive, _ := cmd.Flags().GetInt("depth-recursive")
 		numWorkers, _ := cmd.Flags().GetInt("workers")
 		excludeList, _ := cmd.Flags().GetStringSlice("exclude")
